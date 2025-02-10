@@ -1,10 +1,11 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
-import { swaggerConfig, swaggerCustomOptions } from './configs/swagger.config';
 import * as dotenv from 'dotenv';
+
+import { swaggerConfig, swaggerCustomOptions } from './configs/swagger.config';
+import { AppModule } from './app.module';
 dotenv.config();
 
 async function bootstrap() {
