@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "CommonJS",
     "declaration": true,
-    "removeComments": true,
     "moduleResolution": "node",
+    "removeComments": true,
+    "esModuleInterop": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
@@ -13,12 +14,16 @@
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
-    "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true,
+    "strictNullChecks": false,
     "noImplicitAny": false,
     "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "types": ["node", "@nestjs/swagger"]
+    "typeRoots": ["./src/types", "./node_modules/@types"],
+    "paths": {
+      "src/*": ["src/*"]
+    }
   },
-  "include": ["src/**/*"]
+  "include": ["**/*.ts", "**/*.domain.ts", "**/*.repository.ts"],
+  "exclude": ["node_modules", "dist"]
 }
