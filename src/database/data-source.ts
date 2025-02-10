@@ -1,22 +1,22 @@
 import { join } from 'path';
 
+import * as dotenv from 'dotenv';
 import { DataSource } from 'typeorm';
-import { ConfigService } from '@nestjs/config';
-import 'sqlite3';
+dotenv.config();
 
-export const createDataSource = (configService: ConfigService) => {
-  return new DataSource({
-    type: 'sqlite',
-    database: join(__dirname, '..', 'data', 'camStream.sqlite'),
-    logging: configService.get<boolean>('TYPEORM_LOGGING', false),
-    synchronize: false,
-    entities: [join(__dirname, '/../modules/**/entities/*.entity.{ts,js}')],
-    migrations: [join(__dirname, '../database/migrations/*.{ts,js}')],
-    migrationsTableName: 'migrations',
-  });
-};
+export const AppDataSource = new DataSource({
+  type: 'postgres',
+  host: process.env.POSTGRES_HOST,
+  port: Number(process.env.POSTGRES_PORT),
+  username: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
+  database: process.env.POSTGRES_DATABASE,
+  schema: 'media',
+  logging: Boolean(process.env.TYPEORM_LOGGING),
+  synchronize: false,
+  entities: [join(__dirname, '/../modules/**/entities/*.entity.{ts,js}')],
+  migrations: [join(__dirname, '../database/migrations/*.{ts,js}')],
+  migrationsTableName: 'migrations',
+});
 
-export const initializeDataSource = async (configService: ConfigService) => {
-  const dataSource = createDataSource(configService);
-  await dataSource.initialize();
-};
+AppDataSource.initialize();
