@@ -10,6 +10,9 @@ services:
       - .env
     ports:
       - "3456:3456"
+    volumes:
+      - ./images:/usr/app/service/images
+      - ./videos:/usr/app/service/videos
     networks:
       - 5scontrol
 

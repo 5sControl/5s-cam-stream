@@ -47,3 +47,6 @@ README.md
 
 # Ignore files and directories related to macOS
 .DS_Store
+
+images
+videos
