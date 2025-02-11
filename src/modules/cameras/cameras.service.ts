@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { MediaService } from '../media/media.service';
+import { CameraSnapshotManager } from '../media/managers/camera-snapshot.manager';
 
 import { CameraRepository } from './repositories/camera.repository';
 import { CreateCameraDto } from './dto/create-camera.dto';
@@ -22,6 +23,7 @@ export class CamerasService {
     @InjectRepository(CameraRepository)
     private readonly cameraRepository: CameraRepository,
     private readonly mediaService: MediaService,
+    private readonly cameraSnapshotManager: CameraSnapshotManager,
   ) {}
 
   async create(createCameraDto: CreateCameraDto): Promise<CameraResponseDto> {
@@ -32,6 +34,7 @@ export class CamerasService {
       const savedCamera = await this.cameraRepository.save(camera);
       this.logger.log(`Created camera with ID: ${savedCamera.id}`);
       const snapshotUrl = await this.mediaService.captureSnapshot(createCameraDto);
+      this.cameraSnapshotManager.start(createCameraDto);
       return snapshotUrl;
     } catch (error) {
       if (this.isUniqueConstraintViolation(error)) {
@@ -40,6 +43,7 @@ export class CamerasService {
         );
 
         await this.activateExistingCamera(createCameraDto.ip);
+        this.cameraSnapshotManager.start(createCameraDto);
         const snapshotUrl = await this.mediaService.captureSnapshot(createCameraDto);
         return snapshotUrl;
       }
@@ -55,6 +59,7 @@ export class CamerasService {
     camera.isActive = false;
     const updatedCamera = await this.cameraRepository.save(camera);
     this.logger.log(`Camera with id ${ip} set to inactive.`);
+    this.cameraSnapshotManager.stop(ip);
     return CameraMapper.fromEntityToDomain(updatedCamera);
   }
 
