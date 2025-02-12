@@ -7,9 +7,16 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { CamerasModule } from './modules/cameras/cameras.module';
 import { MediaModule } from './modules/media/media.module';
+import { StorageModule } from './modules/storage/storage.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), DatabaseModule, CamerasModule, MediaModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    DatabaseModule,
+    CamerasModule,
+    MediaModule,
+    StorageModule,
+  ],
 })
 export class AppModule {
   private readonly logger = new Logger(AppModule.name);
