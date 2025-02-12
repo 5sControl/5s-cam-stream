@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable, Logger } from '@nestjs/common';
 import { timer, Subscription } from 'rxjs';
 
 import { MediaService } from '../media.service';
-import { CreateSnapshot } from '../models/interfaces/create-snapshot.interfce';
 
 @Injectable()
 export class CameraSnapshotManager {
@@ -11,21 +11,32 @@ export class CameraSnapshotManager {
 
   constructor(private readonly mediaService: MediaService) {}
 
-  start(cameraDto: CreateSnapshot): void {
-    if (this.snapshotSubscriptions.has(cameraDto.ip)) {
-      this.logger.warn(`Snapshot capture already running for camera ${cameraDto.ip}`);
+  async start(
+    cameraIp: string,
+    rtspUrl: string,
+    imagesUrl: string,
+    outputPath: string,
+  ): Promise<void> {
+    if (this.snapshotSubscriptions.has(cameraIp)) {
+      this.logger.warn(`Snapshot capture already running for camera ${cameraIp}`);
       return;
     }
+
     const subscription = timer(0, 1000).subscribe(async () => {
       try {
-        const result = await this.mediaService.captureSnapshot(cameraDto);
-        this.logger.log(`Snapshot for camera ${cameraDto.ip}: ${result.url}`);
+        const result = await this.mediaService.captureSnapshot(
+          cameraIp,
+          rtspUrl,
+          imagesUrl,
+          outputPath,
+        );
+        this.logger.log(`Snapshot for camera ${cameraIp}: ${result.url}`);
       } catch (error) {
-        this.logger.error(`Snapshot error for camera ${cameraDto.ip}: ${error.message}`);
+        this.logger.warn(`Snapshot error for camera ${cameraIp}`);
       }
     });
-    this.snapshotSubscriptions.set(cameraDto.ip, subscription);
-    this.logger.log(`Started snapshot capture for camera ${cameraDto.ip}`);
+    this.snapshotSubscriptions.set(cameraIp, subscription);
+    this.logger.log(`Started snapshot capture for camera ${cameraIp}`);
   }
 
   stop(cameraIp: string): void {
