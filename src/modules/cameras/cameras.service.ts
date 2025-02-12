@@ -8,6 +8,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { MediaService } from '../media/media.service';
 import { CameraSnapshotManager } from '../media/managers/camera-snapshot.manager';
+import { SnapshotResult } from '../media/models/interfaces/snapshot-result.interface';
+import { StorageService } from '../storage/storage.service';
 
 import { CameraRepository } from './repositories/camera.repository';
 import { CreateCameraDto } from './dto/create-camera.dto';
@@ -24,6 +26,7 @@ export class CamerasService {
     private readonly cameraRepository: CameraRepository,
     private readonly mediaService: MediaService,
     private readonly cameraSnapshotManager: CameraSnapshotManager,
+    private readonly storageService: StorageService,
   ) {}
 
   async create(createCameraDto: CreateCameraDto): Promise<CameraResponseDto> {
@@ -33,8 +36,7 @@ export class CamerasService {
     try {
       const savedCamera = await this.cameraRepository.save(camera);
       this.logger.log(`Created camera with ID: ${savedCamera.id}`);
-      const snapshotUrl = await this.mediaService.captureSnapshot(createCameraDto);
-      this.cameraSnapshotManager.start(createCameraDto);
+      const snapshotUrl = await this.activateCameraAndGetSnapshot(createCameraDto);
       return snapshotUrl;
     } catch (error) {
       if (this.isUniqueConstraintViolation(error)) {
@@ -43,8 +45,7 @@ export class CamerasService {
         );
 
         await this.activateExistingCamera(createCameraDto.ip);
-        this.cameraSnapshotManager.start(createCameraDto);
-        const snapshotUrl = await this.mediaService.captureSnapshot(createCameraDto);
+        const snapshotUrl = await this.activateCameraAndGetSnapshot(createCameraDto);
         return snapshotUrl;
       }
       throw new InternalServerErrorException(error.message);
@@ -53,13 +54,13 @@ export class CamerasService {
 
   async deactivate(ip: string): Promise<Camera> {
     const camera = await this.cameraRepository.findOneBy({ ip });
-    if (!camera) {
-      throw new NotFoundException(`Camera with ip ${ip} not found`);
+    if (!camera || !camera.isActive) {
+      throw new NotFoundException(`Camera with ip ${ip} not found or inactive`);
     }
     camera.isActive = false;
     const updatedCamera = await this.cameraRepository.save(camera);
-    this.logger.log(`Camera with id ${ip} set to inactive.`);
     this.cameraSnapshotManager.stop(ip);
+    await this.mediaService.stopRecording(ip);
     return CameraMapper.fromEntityToDomain(updatedCamera);
   }
 
@@ -79,5 +80,15 @@ export class CamerasService {
     } else {
       throw new NotFoundException(`Camera with IP ${ip} not found.`);
     }
+  }
+
+  async activateCameraAndGetSnapshot(createCameraDto: CreateCameraDto): Promise<SnapshotResult> {
+    const { username, password, ip } = createCameraDto;
+    const rtspUrl = await this.mediaService.getWorkingRtspUrl(username, password, ip);
+    const { outputPath, imagesUrl } = await this.storageService.prepareSnapshotFolder(ip);
+    const snapshotUrl = await this.mediaService.captureSnapshot(ip, rtspUrl, imagesUrl, outputPath);
+    this.cameraSnapshotManager.start(ip, rtspUrl, imagesUrl, outputPath);
+    await this.mediaService.initiateRecording(ip, rtspUrl);
+    return snapshotUrl;
   }
 }
