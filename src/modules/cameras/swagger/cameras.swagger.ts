@@ -35,9 +35,10 @@ export const createCameraBody: ApiBodyOptions = {
     example1: {
       summary: 'Complete Data',
       value: {
-        ip: '192.168.1.10',
+        ip: '192.168.1.168',
         username: 'admin',
-        password: 'secret',
+        password: 'just4Taqtile',
+        name: 'camera',
       },
     },
   },

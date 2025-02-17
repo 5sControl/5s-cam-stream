@@ -1,24 +1,18 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryColumn } from 'typeorm';
 
-@Entity({ schema: 'media', name: 'cameras' })
+@Entity({ schema: 'public', name: 'camera' })
 export class CameraEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryColumn({ type: 'varchar', length: 30 })
+  id: string;
 
-  @Column({ type: 'varchar', length: 45, unique: true })
-  ip: string;
-
-  @Column({ type: 'varchar', length: 128 })
+  @Column({ type: 'varchar', length: 100 })
   username: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 250 })
   password: string;
+
+  @Column({ type: 'varchar', length: 100 })
+  name: string;
 
   @Column({ default: true })
   isActive: boolean;

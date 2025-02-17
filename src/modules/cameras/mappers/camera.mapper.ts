@@ -15,6 +15,10 @@ export class CameraMapper {
   }
 
   static fromDtoToEntity(createCameraDto: CreateCameraDto): CameraEntity {
-    return plainToInstance(CameraEntity, createCameraDto, { enableImplicitConversion: true });
+    return plainToInstance(
+      CameraEntity,
+      { ...createCameraDto, id: createCameraDto.ip },
+      { enableImplicitConversion: true },
+    );
   }
 }
