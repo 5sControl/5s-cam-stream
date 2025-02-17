@@ -39,7 +39,11 @@ export class StorageService {
     return { outputDir, outputPattern };
   }
 
-  async startSegmentWatcher(cameraIp: string, outputDir: string): Promise<void> {
+  async startSegmentWatcher(
+    cameraIp: string,
+    outputDir: string,
+    recordDuration: string,
+  ): Promise<void> {
     const watcher = watch(outputDir, async (eventType, filename) => {
       if (eventType === 'rename' && filename) {
         const regex = new RegExp(`^(\\d{4}-\\d{2}-\\d{2}_\\d{2}-\\d{2}-\\d{2})-${cameraIp}\\.mp4$`);
@@ -51,7 +55,7 @@ export class StorageService {
             this.logger.warn(`Incorrect date format in file name: ${filename}`);
             return;
           }
-          const endTime = moment(startTime).add(2, 'minutes');
+          const endTime = moment(startTime).add(recordDuration, 'seconds');
           const newFileName = `${startTime.format('YYYY-MM-DD_HH-mm-ss')}-${endTime.format('HH-mm-ss')}-${cameraIp}.mp4`;
 
           const oldPath = path.join(outputDir, filename);

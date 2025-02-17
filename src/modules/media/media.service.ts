@@ -19,8 +19,6 @@ export class MediaService {
 
   private recordingProcesses: Map<string, ffmpeg.FfmpegCommand> = new Map();
 
-  // private segmentWatchers: Map<string, FSWatcher> = new Map();
-
   private recordingSubscriptions: Map<string, Subscription> = new Map();
 
   constructor(
@@ -50,11 +48,15 @@ export class MediaService {
     return { url: snapshotUrl };
   }
 
-  async startRecording(cameraIp: string, rtspUrl: string): Promise<ffmpeg.FfmpegCommand> {
+  async startRecording(
+    cameraIp: string,
+    rtspUrl: string,
+    recordDuration: string,
+  ): Promise<ffmpeg.FfmpegCommand> {
     try {
       const { outputDir, outputPattern } =
         await this.storageService.prepareRecordingFolder(cameraIp);
-      await this.storageService.startSegmentWatcher(cameraIp, outputDir);
+      await this.storageService.startSegmentWatcher(cameraIp, outputDir, recordDuration);
 
       const command = ffmpeg(rtspUrl)
         .inputOptions('-rtsp_transport tcp')
@@ -62,13 +64,19 @@ export class MediaService {
           '-f',
           'segment',
           '-segment_time',
-          '120',
-          '-reset_timestamps',
-          '1',
+          `${recordDuration}`,
           '-strftime',
           '1',
-          '-c',
-          'copy',
+          '-c:v',
+          'libx264',
+          '-preset',
+          'slow',
+          '-crf',
+          '30',
+          '-c:a',
+          'aac',
+          '-b:a',
+          '128k',
         ])
         .save(outputPattern);
 
@@ -79,7 +87,11 @@ export class MediaService {
     }
   }
 
-  async initiateRecording(cameraIp: string, rtspUrl: string): Promise<ffmpeg.FfmpegCommand> {
+  async initiateRecording(
+    cameraIp: string,
+    rtspUrl: string,
+    recordDuration: string,
+  ): Promise<ffmpeg.FfmpegCommand> {
     const oldSub = this.recordingSubscriptions.get(cameraIp);
     if (oldSub) {
       oldSub.unsubscribe();
@@ -89,7 +101,11 @@ export class MediaService {
     return new Promise<ffmpeg.FfmpegCommand>((resolve, reject) => {
       let firstSuccess = false;
 
-      const subscription = this.startRecordingWithReconnect(cameraIp, rtspUrl).subscribe({
+      const subscription = this.startRecordingWithReconnect(
+        cameraIp,
+        rtspUrl,
+        recordDuration,
+      ).subscribe({
         next: (command) => {
           if (!firstSuccess) {
             firstSuccess = true;
@@ -106,10 +122,11 @@ export class MediaService {
   private startRecordingWithReconnect(
     cameraIp: string,
     rtspUrl: string,
+    recordDuration: string,
   ): Observable<ffmpeg.FfmpegCommand> {
     const retryDelays: number[] = this.getRetryDelays();
 
-    return this.startRecordingObservable(cameraIp, rtspUrl).pipe(
+    return this.startRecordingObservable(cameraIp, rtspUrl, recordDuration).pipe(
       retry({
         count: retryDelays.length,
         delay: (error, retryAttempt) => {
@@ -132,9 +149,10 @@ export class MediaService {
   private startRecordingObservable(
     cameraIp: string,
     rtspUrl: string,
+    recordDuration: string,
   ): Observable<ffmpeg.FfmpegCommand> {
     return new Observable<ffmpeg.FfmpegCommand>((subscriber) => {
-      this.startRecording(cameraIp, rtspUrl)
+      this.startRecording(cameraIp, rtspUrl, recordDuration)
         .then((command) => {
           subscriber.next(command);
 
