@@ -13,5 +13,6 @@ import { CameraRepository } from './repositories/camera.repository';
   imports: [TypeOrmModule.forFeature([CameraEntity]), MediaModule, StorageModule],
   controllers: [CamerasController],
   providers: [CamerasService, CameraRepository],
+  exports: [CamerasService],
 })
 export class CamerasModule {}

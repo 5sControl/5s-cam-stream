@@ -3,18 +3,10 @@ import { Expose, Exclude } from 'class-transformer';
 
 export class Camera {
   @ApiProperty({
-    description: 'Unique identifier of the camera',
-    example: 1,
-    readOnly: true,
-  })
-  @Expose({ name: 'id' })
-  cameraId: number;
-
-  @ApiProperty({
     description: 'IP address of the camera',
     example: '192.168.1.10',
   })
-  @Expose()
+  @Expose({ name: 'id' })
   ip: string;
 
   @ApiProperty({
@@ -23,6 +15,13 @@ export class Camera {
   })
   @Expose()
   username: string;
+
+  @ApiProperty({
+    description: 'Name of the camera',
+    example: 'admin',
+  })
+  @Expose()
+  name: string;
 
   @Exclude()
   password: string;

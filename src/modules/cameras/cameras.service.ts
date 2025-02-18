@@ -96,4 +96,9 @@ export class CamerasService {
 
     return camera ?? null;
   }
+
+  async getActiveCameras(): Promise<Camera[]> {
+    const rawCameras = await this.cameraRepository.find({ where: { isActive: true } });
+    return rawCameras.map((camera) => CameraMapper.fromEntityToDomain(camera));
+  }
 }
