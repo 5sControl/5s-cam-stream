@@ -9,6 +9,7 @@ import {
 import { Camera } from '../domain/camera.domain';
 import { CameraResponseDto } from '../dto/camera-response.dto';
 import { CreateCameraDto } from '../dto/create-camera.dto';
+import { SnapshotCameraDto } from '../dto/snapshot-camera.dto';
 
 export const createCameraOperation: ApiOperationOptions = {
   summary: 'Add a new camera',
@@ -60,4 +61,48 @@ export const deactivateCameraParam: ApiParamOptions = {
   type: String,
   description: 'IP of the camera to be deactivated',
   example: '192.168.1.168',
+};
+
+export const getSnapshotOperation: ApiOperationOptions = {
+  summary: 'Retrieve camera snapshot',
+  description:
+    'Returns a snapshot of the camera as a JPEG file by IP if the camera is added and active. ' +
+    'If the camera is added but inactive, a 400 error is returned with an appropriate message. ' +
+    'If the camera is not added, a 404 error is returned.',
+};
+
+export const getSnapshotResponse: ApiResponseOptions = {
+  status: HttpStatus.OK,
+  description: 'Snapshot successfully retrieved as a JPEG image file.',
+  content: {
+    'image/jpeg': {
+      schema: {
+        type: 'string',
+        format: 'binary',
+      },
+    },
+  },
+};
+
+export const getSnapshotInactiveResponse: ApiResponseOptions = {
+  status: HttpStatus.BAD_REQUEST,
+  description: 'Camera is added but inactive.',
+};
+
+export const getSnapshotNotFoundResponse: ApiResponseOptions = {
+  status: HttpStatus.NOT_FOUND,
+  description: 'Camera is not added.',
+};
+
+export const snapshotCameraBody: ApiBodyOptions = {
+  description: 'Camera IP to retrieve the snapshot.',
+  type: SnapshotCameraDto,
+  examples: {
+    example1: {
+      summary: 'Camera IP example',
+      value: {
+        ip: '192.168.1.168',
+      },
+    },
+  },
 };

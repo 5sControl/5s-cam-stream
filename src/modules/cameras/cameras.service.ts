@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
@@ -55,6 +55,18 @@ export class CamerasService {
     this.cameraSnapshotManager.stop(ip);
     await this.mediaService.stopRecording(ip);
     return CameraMapper.fromEntityToDomain(updatedCamera);
+  }
+
+  async getSnapshot(ip: string): Promise<Buffer> {
+    const camera = await this.cameraRepository.findOneBy({ id: ip });
+    if (!camera) {
+      throw new NotFoundException(`Camera with IP ${ip} is not added`);
+    }
+    if (!camera.isActive) {
+      throw new BadRequestException(`Camera with IP ${ip} is inactive`);
+    }
+
+    return this.storageService.getSnapshotFromDisk(ip);
   }
 
   private async activateExistingCamera(ip: string): Promise<void> {

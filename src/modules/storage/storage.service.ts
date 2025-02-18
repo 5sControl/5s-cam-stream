@@ -2,7 +2,7 @@ import * as path from 'path';
 import { promises as fs, FSWatcher, watch } from 'fs';
 
 import moment from 'moment';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -37,6 +37,16 @@ export class StorageService {
     await fs.mkdir(outputDir, { recursive: true });
 
     return { outputDir, outputPattern };
+  }
+
+  async getSnapshotFromDisk(cameraIp: string): Promise<Buffer> {
+    const outputPath = await this.getSnapshotFilePath(cameraIp);
+    try {
+      const fileBuffer = await fs.readFile(outputPath);
+      return fileBuffer;
+    } catch (err) {
+      throw new NotFoundException(`Snapshot for camera ${cameraIp} not found on disk`, err.message);
+    }
   }
 
   async startSegmentWatcher(
@@ -89,5 +99,11 @@ export class StorageService {
 
   private buildRecordingFileName(cameraIp: string): string {
     return `%Y-%m-%d_%H-%M-%S-${cameraIp}.mp4`;
+  }
+
+  async getSnapshotFilePath(cameraIp: string): Promise<string> {
+    const imagesDir = this.configService.get<string>('IMAGES_DIR', './images');
+    const outputDir = path.join(imagesDir, cameraIp);
+    return path.join(outputDir, 'snapshot.jpg');
   }
 }
