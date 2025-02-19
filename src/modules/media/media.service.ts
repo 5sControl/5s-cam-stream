@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { once } from 'events';
+import { FSWatcher, watch } from 'fs';
 
+import moment from 'moment';
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import ffmpeg from 'fluent-ffmpeg';
@@ -10,6 +12,7 @@ import { EMPTY, Observable, Subscription, timer } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
 
 import { StorageService } from '../storage/storage.service';
+import { VideoService } from '../video/video.service';
 
 import { SnapshotResult } from './models/interfaces/snapshot-result.interface';
 
@@ -21,9 +24,14 @@ export class MediaService {
 
   private recordingSubscriptions: Map<string, Subscription> = new Map();
 
+  private segmentWatchers: Map<string, FSWatcher> = new Map();
+
+  private processedSegments = new Set<string>();
+
   constructor(
     private readonly configService: ConfigService,
     private readonly storageService: StorageService,
+    private readonly videoService: VideoService,
   ) {}
 
   async captureSnapshot(
@@ -56,7 +64,7 @@ export class MediaService {
     try {
       const { outputDir, outputPattern } =
         await this.storageService.prepareRecordingFolder(cameraIp);
-      await this.storageService.startSegmentWatcher(cameraIp, outputDir, recordDuration);
+      await this.startSegmentWatcher(cameraIp, outputDir, recordDuration);
 
       const command = ffmpeg(rtspUrl)
         .inputOptions('-rtsp_transport tcp')
@@ -65,6 +73,8 @@ export class MediaService {
           'segment',
           '-segment_time',
           `${recordDuration}`,
+          '-reset_timestamps',
+          '1',
           '-strftime',
           '1',
           '-c:v',
@@ -182,7 +192,7 @@ export class MediaService {
       command.kill('SIGTERM');
       this.logger.log(`Stopped recording for camera ${ip}`);
       this.recordingProcesses.delete(ip);
-      this.storageService.stopSegmentWatcher(ip);
+      this.stopSegmentWatcher(ip);
 
       const subscription = this.recordingSubscriptions.get(ip);
       if (subscription) {
@@ -244,5 +254,61 @@ export class MediaService {
       '10000,180000,900900',
     );
     return delaysString.split(',').map((delay) => parseInt(delay.trim(), 10));
+  }
+
+  async startSegmentWatcher(
+    cameraIp: string,
+    outputDir: string,
+    recordDuration: string,
+  ): Promise<void> {
+    const watcher = watch(outputDir, async (eventType, filename) => {
+      if (eventType === 'rename' && filename) {
+        const regex = new RegExp(`^(\\d{4}-\\d{2}-\\d{2}_\\d{2}-\\d{2}-\\d{2})-${cameraIp}\\.mp4$`);
+        const match = filename.match(regex);
+
+        if (match) {
+          const startTimeStr = match[1];
+          const regexVideoPath = /(videos\/.+)$/;
+          const matchVideoPath = outputDir.match(regexVideoPath);
+          const timestampMs = moment(startTimeStr, 'YYYY-MM-DD_HH-mm-ss').valueOf();
+          const startTime = moment(startTimeStr, 'YYYY-MM-DD_HH-mm-ss');
+
+          if (!startTime.isValid()) {
+            this.logger.warn(`Incorrect date format in file name: ${filename}`);
+            return;
+          }
+
+          const endTime = moment(startTime).add(recordDuration, 'seconds');
+          const newFileName = `${startTime.format('YYYY-MM-DD_HH-mm-ss')}-${endTime.format('HH-mm-ss')}-${cameraIp}.mp4`;
+          const relativeFilePath = `${matchVideoPath[1]}/${newFileName}`;
+
+          if (this.processedSegments.has(relativeFilePath)) {
+            this.logger.log(`Segment already processed: ${relativeFilePath}`);
+            return;
+          }
+
+          const video = await this.videoService.saveVideo({
+            filePath: relativeFilePath,
+            startTime: timestampMs,
+            endTime: timestampMs + +recordDuration * 1000,
+            cameraIp,
+          });
+          this.processedSegments.add(relativeFilePath);
+
+          await this.storageService.renameSegmentFile(outputDir, filename, newFileName);
+        }
+      }
+    });
+
+    this.segmentWatchers.set(cameraIp, watcher);
+  }
+
+  stopSegmentWatcher(cameraIp: string): void {
+    const watcher = this.segmentWatchers.get(cameraIp);
+    if (watcher) {
+      watcher.close();
+      this.segmentWatchers.delete(cameraIp);
+      this.logger.log(`Stopped segment watcher for camera ${cameraIp}`);
+    }
   }
 }
