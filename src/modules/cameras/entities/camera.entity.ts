@@ -1,4 +1,13 @@
-import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  PrimaryColumn,
+  OneToMany,
+} from 'typeorm';
+
+import { CameraScheduleEntity } from '../../schedule/entities/camera-schedule.entity';
 
 @Entity({ schema: 'public', name: 'camera' })
 export class CameraEntity {
@@ -22,4 +31,7 @@ export class CameraEntity {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
+
+  @OneToMany(() => CameraScheduleEntity, (cameraSchedule) => cameraSchedule.camera)
+  cameraSchedules: CameraScheduleEntity[];
 }

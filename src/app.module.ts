@@ -11,6 +11,7 @@ import { CameraRecoveryService } from './camera-recovery.service';
 import { DirectoryService } from './directory.service';
 import { VideoModule } from './modules/video/video.module';
 import { bullConfig } from './configs/bull.config';
+import { ScheduleModule } from './modules/schedule/schedule.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { bullConfig } from './configs/bull.config';
     BullModule.registerQueue({
       name: 'video',
     }),
+    ScheduleModule,
   ],
   providers: [CameraRecoveryService, DirectoryService],
 })
