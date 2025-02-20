@@ -11,9 +11,16 @@ export class VideoProcessor {
   private readonly logger = new Logger(VideoProcessor.name);
   @Process('convert')
   async handleConversion(job: Job<ChunkInfo>) {
-    const { mp4Path, outTsPath, ss, t, inputOffset } = job.data;
+    const { filePath, chunkOutputPath, chunkStartTime, chunkDuration, segmentInputOffset } =
+      job.data;
 
-    await this.runFfmpeg(mp4Path, outTsPath, ss, t, inputOffset);
+    await this.runFfmpeg(
+      filePath,
+      chunkOutputPath,
+      chunkStartTime,
+      chunkDuration,
+      segmentInputOffset,
+    );
   }
 
   @OnQueueFailed()
@@ -35,19 +42,19 @@ export class VideoProcessor {
   }
 
   private runFfmpeg(
-    mp4Path: string,
-    outTsPath: string,
-    ss: number,
-    t: number,
-    inputOffset: number,
+    filePath: string,
+    chunkOutputPath: string,
+    chunkStartTime: number,
+    chunkDuration: number,
+    segmentInputOffset: number,
   ): Promise<boolean> {
     return new Promise((resolve, reject) => {
       let command = Ffmpeg()
-        .input(mp4Path)
-        .inputOptions([`-ss ${inputOffset}`, `-t ${t}`]);
+        .input(filePath)
+        .inputOptions([`-ss ${segmentInputOffset}`, `-t ${chunkDuration}`]);
 
-      const videoFilter = `setpts=PTS-STARTPTS+${ss}/TB`;
-      const audioFilter = `asetpts=PTS-STARTPTS+${ss}/TB`;
+      const videoFilter = `setpts=PTS-STARTPTS+${chunkStartTime}/TB`;
+      const audioFilter = `asetpts=PTS-STARTPTS+${chunkStartTime}/TB`;
 
       command
         .videoCodec('libx264')
@@ -56,7 +63,7 @@ export class VideoProcessor {
         .audioFilter(audioFilter)
         .outputOptions(['-preset', 'slow', '-crf', '30'])
         .format('mpegts')
-        .output(outTsPath)
+        .output(chunkOutputPath)
         .on('end', () => resolve(true))
         .on('error', (err) => reject(err))
         .run();
