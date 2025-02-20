@@ -1,15 +1,16 @@
 import * as path from 'path';
-import { promises as fs, FSWatcher, watch } from 'fs';
+import { promises as fs } from 'fs';
 
-import moment from 'moment';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+
+import { CreateManifestDto } from '../video/dto/create-manifest.dto';
+
+import { TimespanPaths } from './models/interfaces/timespan-paths.interface';
 
 @Injectable()
 export class StorageService {
   private readonly logger = new Logger(StorageService.name);
-
-  private segmentWatchers: Map<string, FSWatcher> = new Map();
 
   constructor(private readonly configService: ConfigService) {}
 
@@ -49,51 +50,26 @@ export class StorageService {
     }
   }
 
-  async startSegmentWatcher(
-    cameraIp: string,
+  async renameSegmentFile(
     outputDir: string,
-    recordDuration: string,
-  ): Promise<void> {
-    const watcher = watch(outputDir, async (eventType, filename) => {
-      if (eventType === 'rename' && filename) {
-        const regex = new RegExp(`^(\\d{4}-\\d{2}-\\d{2}_\\d{2}-\\d{2}-\\d{2})-${cameraIp}\\.mp4$`);
-        const match = filename.match(regex);
-        if (match) {
-          const startTimeStr = match[1];
-          const startTime = moment(startTimeStr, 'YYYY-MM-DD_HH-mm-ss');
-          if (!startTime.isValid()) {
-            this.logger.warn(`Incorrect date format in file name: ${filename}`);
-            return;
-          }
-          const endTime = moment(startTime).add(recordDuration, 'seconds');
-          const newFileName = `${startTime.format('YYYY-MM-DD_HH-mm-ss')}-${endTime.format('HH-mm-ss')}-${cameraIp}.mp4`;
+    filename: string,
+    newFileName: string,
+  ): Promise<string | null> {
+    const oldPath = path.join(outputDir, filename);
+    const newPath = path.join(outputDir, newFileName);
+    console.log(newPath, 'oldPath');
+    console.log(newFileName, 55);
 
-          const oldPath = path.join(outputDir, filename);
-          const newPath = path.join(outputDir, newFileName);
-          try {
-            await fs.access(oldPath);
-            await fs.rename(oldPath, newPath);
-            this.logger.log(`Renamed segment file ${filename} to ${newFileName}`);
-          } catch (err) {
-            if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
-              return null;
-            } else {
-              this.logger.error(`Error renaming file ${filename}: ${(err as Error).message}`);
-            }
-          }
-        }
+    try {
+      await fs.access(oldPath);
+      await fs.rename(oldPath, newPath);
+      this.logger.log(`Renamed segment file ${filename} to ${newFileName}`);
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+        return null;
+      } else {
+        this.logger.error(`Error renaming file ${filename}: ${(err as Error).message}`);
       }
-    });
-
-    this.segmentWatchers.set(cameraIp, watcher);
-  }
-
-  stopSegmentWatcher(cameraIp: string): void {
-    const watcher = this.segmentWatchers.get(cameraIp);
-    if (watcher) {
-      watcher.close();
-      this.segmentWatchers.delete(cameraIp);
-      this.logger.log(`Stopped segment watcher for camera ${cameraIp}`);
     }
   }
 
@@ -105,5 +81,45 @@ export class StorageService {
     const imagesDir = this.configService.get<string>('IMAGES_DIR', './images');
     const outputDir = path.join(imagesDir, cameraIp);
     return path.join(outputDir, 'snapshot.jpg');
+  }
+
+  async generateChunkFilePath(
+    timespanDir: string,
+    timespanId: string,
+    timeStart: number,
+    timeEnd: number,
+    cameraIp: string,
+    chunkIndex: number,
+  ) {
+    await fs.mkdir(timespanDir, { recursive: true });
+    const chunkName = `${timespanId}_${timeStart}_${timeEnd}_${cameraIp}_${chunkIndex}.ts`;
+    return path.join(timespanDir, chunkName);
+  }
+
+  getManifestPath(body: CreateManifestDto): TimespanPaths {
+    const { timeStart, timeEnd, cameraIp, timespanId } = body;
+    const videosDir = this.configService.get<string>(
+      'VIDEOS_DIR',
+      path.join(__dirname, '..', 'videos'),
+    );
+
+    const timespanFolder = `${timespanId}_${timeStart}_${timeEnd}`;
+    const timespanDir = path.join(videosDir, cameraIp, timespanFolder);
+    const m3u8Name = `${timespanId}_${timeStart}_${timeEnd}_${cameraIp}.m3u8`;
+    const manifestPath = path.join(timespanDir, m3u8Name);
+
+    return { timespanDir, manifestPath, timespanFolder };
+  }
+
+  generatePublicChunkPath(outTsPath: string, cameraIp: string): string {
+    const chunkName = path.basename(outTsPath);
+
+    const publicChunkPath = path.join('videos', cameraIp, chunkName).replace(/\\/g, '/');
+    return publicChunkPath;
+  }
+
+  async writeManifest(timespanDir: string, manifestPath: string, m3u8: string): Promise<void> {
+    await fs.mkdir(timespanDir, { recursive: true });
+    await fs.writeFile(manifestPath, m3u8, 'utf8');
   }
 }
