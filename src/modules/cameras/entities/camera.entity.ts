@@ -26,6 +26,9 @@ export class CameraEntity {
   @Column({ default: true })
   isActive: boolean;
 
+  @Column({ default: false })
+  isRecording: boolean;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;
 
