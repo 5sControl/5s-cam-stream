@@ -8,4 +8,16 @@ export class CameraScheduleRepository extends Repository<CameraScheduleEntity> {
   constructor(private dataSource: DataSource) {
     super(CameraScheduleEntity, dataSource.createEntityManager());
   }
+
+  findAllWithRelations(): Promise<CameraScheduleEntity[]> {
+    return this.find({
+      relations: {
+        camera: true,
+        workingTimeDay: {
+          dayOfWeek: true,
+          workingTime: true,
+        },
+      },
+    });
+  }
 }

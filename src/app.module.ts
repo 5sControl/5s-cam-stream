@@ -7,7 +7,6 @@ import { DatabaseModule } from './database/database.module';
 import { CamerasModule } from './modules/cameras/cameras.module';
 import { MediaModule } from './modules/media/media.module';
 import { StorageModule } from './modules/storage/storage.module';
-import { CameraRecoveryService } from './camera-recovery.service';
 import { DirectoryService } from './directory.service';
 import { VideoModule } from './modules/video/video.module';
 import { bullConfig } from './configs/bull.config';
@@ -27,14 +26,13 @@ import { ScheduleModule } from './modules/schedule/schedule.module';
     }),
     ScheduleModule,
   ],
-  providers: [CameraRecoveryService, DirectoryService],
+  providers: [DirectoryService],
 })
 export class AppModule {
   private readonly logger = new Logger(AppModule.name);
 
   constructor(
     private readonly directoryService: DirectoryService,
-    private readonly cameraRecoveryService: CameraRecoveryService,
     @InjectQueue('video') private readonly videoQueue: Queue,
   ) {}
 
@@ -47,7 +45,5 @@ export class AppModule {
     this.videoQueue.on('error', (error) => {
       this.logger.error(`Bull queue error: ${error.message}`);
     });
-
-    // this.cameraRecoveryService.recoverActiveCameras();
   }
 }
