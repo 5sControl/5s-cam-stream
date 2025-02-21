@@ -283,7 +283,6 @@ export class MediaService {
           const relativeFilePath = `${matchVideoPath[1]}/${newFileName}`;
 
           if (this.processedSegments.has(relativeFilePath)) {
-            this.logger.log(`Segment already processed: ${relativeFilePath}`);
             return;
           }
 

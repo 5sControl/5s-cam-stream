@@ -57,8 +57,6 @@ export class StorageService {
   ): Promise<string | null> {
     const oldPath = path.join(outputDir, filename);
     const newPath = path.join(outputDir, newFileName);
-    console.log(newPath, 'oldPath');
-    console.log(newFileName, 55);
 
     try {
       await fs.access(oldPath);
