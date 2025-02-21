@@ -51,6 +51,16 @@ export class CamerasService {
       throw new NotFoundException(`Camera with ip ${ip} not found or inactive`);
     }
     camera.isActive = false;
+    camera.isRecording = false;
+    const updatedCamera = await this.cameraRepository.save(camera);
+    this.cameraSnapshotManager.stop(ip);
+    await this.mediaService.stopRecording(ip);
+    return CameraMapper.fromEntityToDomain(updatedCamera);
+  }
+
+  async stopRecording(ip: string): Promise<Camera> {
+    const camera = await this.cameraRepository.findOneBy({ id: ip });
+    camera.isRecording = false;
     const updatedCamera = await this.cameraRepository.save(camera);
     this.cameraSnapshotManager.stop(ip);
     await this.mediaService.stopRecording(ip);
@@ -81,6 +91,17 @@ export class CamerasService {
   }
 
   async activateCameraAndGetSnapshot(createCameraDto: CreateCameraDto): Promise<SnapshotResult> {
+    const camera = await this.cameraRepository.findOne({ where: { id: createCameraDto.ip } });
+    if (!camera) {
+      throw new NotFoundException(`Camera with IP ${createCameraDto.ip} not found`);
+    }
+    if (camera.isRecording) {
+      return;
+    }
+
+    camera.isRecording = true;
+    await this.cameraRepository.save(camera);
+
     const { username, password, ip } = createCameraDto;
     const recordDuration = this.configService.getOrThrow<string>('RECORD_DURATION');
     const rtspUrl = await this.mediaService.getWorkingRtspUrl(username, password, ip);
