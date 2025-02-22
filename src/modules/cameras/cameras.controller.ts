@@ -16,6 +16,10 @@ import { CreateCameraDto } from './dto/create-camera.dto';
 import { CameraResponseDto } from './dto/camera-response.dto';
 import { Camera } from './domain/camera.domain';
 import {
+  checkRtspUrlBadResponse,
+  checkRtspUrlBody,
+  checkRtspUrlOperation,
+  checkRtspUrlResponse,
   createCameraBadResponse,
   createCameraBody,
   createCameraOperation,
@@ -30,6 +34,7 @@ import {
   snapshotCameraBody,
 } from './swagger/cameras.swagger';
 import { SnapshotCameraDto } from './dto/snapshot-camera.dto';
+import { CheckStreamUrlDto } from './dto/check-stream-url.dto';
 
 @Controller('cameras')
 export class CamerasController {
@@ -71,5 +76,19 @@ export class CamerasController {
     this.logger.log(`Requesting snapshot for camera with IP: ${ip}`);
     const fileBuffer = await this.camerasService.getSnapshot(ip);
     return new StreamableFile(fileBuffer, { type: 'image/jpeg' });
+  }
+
+  // /get_stream_url
+  @Post('rtsp-check')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation(checkRtspUrlOperation)
+  @ApiBody(checkRtspUrlBody)
+  @ApiResponse(checkRtspUrlResponse)
+  @ApiResponse(checkRtspUrlBadResponse)
+  async checkRtspUrl(@Body() dto: CheckStreamUrlDto) {
+    this.logger.log(`Check RTSP URL for IP=${dto.ip}`);
+    const { ip, username, password } = dto;
+    const rtspUrl = await this.camerasService.getRtspUrlOrFail(ip, username, password);
+    return { url: rtspUrl };
   }
 }

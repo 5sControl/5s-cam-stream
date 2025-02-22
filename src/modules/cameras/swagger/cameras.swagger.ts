@@ -10,6 +10,7 @@ import { Camera } from '../domain/camera.domain';
 import { CameraResponseDto } from '../dto/camera-response.dto';
 import { CreateCameraDto } from '../dto/create-camera.dto';
 import { SnapshotCameraDto } from '../dto/snapshot-camera.dto';
+import { CheckStreamUrlDto } from '../dto/check-stream-url.dto';
 
 export const createCameraOperation: ApiOperationOptions = {
   summary: 'Add a new camera',
@@ -105,4 +106,35 @@ export const snapshotCameraBody: ApiBodyOptions = {
       },
     },
   },
+};
+
+export const checkRtspUrlOperation: ApiOperationOptions = {
+  summary: 'Check RTSP stream URL',
+  description: 'Returns a working RTSP URL for the given camera credentials.',
+};
+
+export const checkRtspUrlBody: ApiBodyOptions = {
+  description: 'Camera credentials to check the RTSP stream URL.',
+  type: CheckStreamUrlDto,
+  examples: {
+    example1: {
+      summary: 'Camera credentials example',
+      value: {
+        ip: '192.168.1.168',
+        username: 'admin',
+        password: 'just4Taqtile',
+      },
+    },
+  },
+};
+
+export const checkRtspUrlResponse: ApiResponseOptions = {
+  status: HttpStatus.OK,
+  description: 'RTSP stream URL successfully checked.',
+  type: CameraResponseDto,
+};
+
+export const checkRtspUrlBadResponse: ApiResponseOptions = {
+  status: HttpStatus.BAD_REQUEST,
+  description: 'Invalid input data. Check the request body and try again.',
 };

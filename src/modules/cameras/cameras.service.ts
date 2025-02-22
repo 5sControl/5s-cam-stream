@@ -122,4 +122,9 @@ export class CamerasService {
     const rawCameras = await this.cameraRepository.find({ where: { isActive: true } });
     return rawCameras.map((camera) => CameraMapper.fromEntityToDomain(camera));
   }
+
+  async getRtspUrlOrFail(ip: string, username: string, password: string): Promise<string> {
+    const rtspUrl = await this.mediaService.getWorkingRtspUrl(username, password, ip);
+    return rtspUrl;
+  }
 }
