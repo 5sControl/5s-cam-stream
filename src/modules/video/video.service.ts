@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { promises as fsPromise } from 'fs';
 
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InjectQueue } from '@nestjs/bull';
@@ -17,16 +17,32 @@ import { Video } from './domain/video.domain';
 import { CreateVideoDto } from './dto/create-video.dto';
 
 @Injectable()
-export class VideoService {
+export class VideoService implements OnModuleInit {
   private readonly logger = new Logger(VideoService.name);
 
   constructor(
     @InjectQueue('video') private readonly videoQueue: Queue,
+    @InjectQueue('videoCleanup')
+    private readonly cleanupQueue: Queue,
     private readonly configService: ConfigService,
     private readonly storageService: StorageService,
     @InjectRepository(VideoRepository)
     private readonly videoRepository: VideoRepository,
   ) {}
+
+  async onModuleInit() {
+    await this.cleanupQueue.add(
+      'cleanupOldVideos',
+      {},
+      {
+        repeat: {
+          cron: '54 17 * * *',
+        },
+        removeOnComplete: true,
+        removeOnFail: true,
+      },
+    );
+  }
 
   public async saveVideo(createVideoDto: CreateVideoDto): Promise<Video> {
     const videoEntity = VideoMapper.fromDtoToEntity(createVideoDto);
@@ -40,6 +56,17 @@ export class VideoService {
     if (result.affected === 0) {
       throw new NotFoundException(`Video with id ${id} not found`);
     }
+  }
+
+  async deleteVideoRecord(filePath: string): Promise<void> {
+    const video = await this.videoRepository.findOne({ where: { filePath } });
+    if (!video) {
+      this.logger.warn(`No DB record found for filePath=${filePath}`);
+      return;
+    }
+
+    await this.videoRepository.delete(video.id);
+    this.logger.log(`DB record for file ${filePath} (id=${video.id}) was deleted`);
   }
 
   public async createManifest(body: CreateManifestDto): Promise<string> {
