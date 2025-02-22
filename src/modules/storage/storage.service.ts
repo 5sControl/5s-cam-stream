@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { promises as fs } from 'fs';
+import { promises as fs, Stats } from 'fs';
 
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -119,5 +119,35 @@ export class StorageService {
   async writeManifest(timespanDir: string, manifestPath: string, m3u8: string): Promise<void> {
     await fs.mkdir(timespanDir, { recursive: true });
     await fs.writeFile(manifestPath, m3u8, 'utf8');
+  }
+
+  async readDirSafe(dirPath: string): Promise<string[]> {
+    try {
+      return await fs.readdir(dirPath);
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        return [];
+      }
+      throw err;
+    }
+  }
+
+  async statSafe(fullPath: string): Promise<Stats | null> {
+    try {
+      return await fs.stat(fullPath);
+    } catch (err) {
+      this.logger.warn(`Can't stat ${fullPath}: ${(err as Error).message}`);
+      return null;
+    }
+  }
+
+  async removeFolder(fullPath: string): Promise<void> {
+    await fs.rm(fullPath, { recursive: true, force: true });
+    this.logger.log(`Removed folder: ${fullPath}`);
+  }
+
+  async removeFile(fullPath: string): Promise<void> {
+    await fs.unlink(fullPath);
+    this.logger.log(`Removed old file: ${fullPath}`);
   }
 }
