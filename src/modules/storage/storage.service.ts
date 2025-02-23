@@ -132,11 +132,11 @@ export class StorageService {
     }
   }
 
-  async statSafe(fullPath: string): Promise<Stats | null> {
+  async statSafe(path: string): Promise<Stats | null> {
     try {
-      return await fs.stat(fullPath);
+      return await fs.stat(path);
     } catch (err) {
-      this.logger.warn(`Can't stat ${fullPath}: ${(err as Error).message}`);
+      this.logger.warn(`Can't stat ${path}: ${(err as Error).message}`);
       return null;
     }
   }
