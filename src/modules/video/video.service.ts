@@ -205,4 +205,12 @@ export class VideoService implements OnModuleInit {
 
     return m3u8;
   }
+
+  async checkVideoAvailability(time: number, cameraIp: string): Promise<Video> {
+    const video = await this.videoRepository.findByTimeAndCamera(time, cameraIp);
+    if (!video) {
+      throw new NotFoundException(`No video fragment found for camera ${cameraIp} at time ${time}`);
+    }
+    return VideoMapper.fromEntityToDomain(video);
+  }
 }

@@ -16,4 +16,12 @@ export class VideoRepository extends Repository<VideoEntity> {
       .andWhere('video.end_time > :startTime', { startTime })
       .getMany();
   }
+
+  async findByTimeAndCamera(time: number, cameraIp: string): Promise<VideoEntity | null> {
+    return this.createQueryBuilder('video')
+      .where('video.camera_ip = :cameraIp', { cameraIp })
+      .andWhere('video.start_time <= :time', { time: time })
+      .andWhere('video.end_time >= :time', { time: time })
+      .getOne();
+  }
 }
