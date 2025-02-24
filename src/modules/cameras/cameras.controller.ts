@@ -51,7 +51,7 @@ export class CamerasController {
   @ApiBody(createCameraBody)
   async create(@Body() createCameraDto: CreateCameraDto): Promise<CameraResponseDto> {
     this.logger.log(`Creating camera with IP: ${JSON.stringify(createCameraDto)}`);
-    return this.camerasService.create(createCameraDto);
+    return this.camerasService.addCamera(createCameraDto);
   }
 
   @Patch(':ip/deactivate')

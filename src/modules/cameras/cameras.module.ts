@@ -8,11 +8,12 @@ import { CamerasService } from './cameras.service';
 import { CamerasController } from './cameras.controller';
 import { CameraEntity } from './entities/camera.entity';
 import { CameraRepository } from './repositories/camera.repository';
+import { AesService } from './aes.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([CameraEntity]), MediaModule, StorageModule],
   controllers: [CamerasController],
-  providers: [CamerasService, CameraRepository],
-  exports: [CamerasService],
+  providers: [CamerasService, CameraRepository, AesService],
+  exports: [CamerasService, AesService],
 })
 export class CamerasModule {}

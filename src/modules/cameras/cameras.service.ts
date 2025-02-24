@@ -26,7 +26,7 @@ export class CamerasService {
     private readonly storageService: StorageService,
   ) {}
 
-  async create(createCameraDto: CreateCameraDto): Promise<CameraResponseDto> {
+  async addCamera(createCameraDto: CreateCameraDto): Promise<CameraResponseDto> {
     const { ip } = createCameraDto;
     const camera = await this.getCamera(ip);
 
@@ -38,7 +38,10 @@ export class CamerasService {
       const snapshotUrl = await this.activateCameraAndGetSnapshot(createCameraDto);
       return snapshotUrl;
     } else {
-      await this.activateExistingCamera(createCameraDto.ip);
+      camera.isActive = true;
+      const updatedCamera = await this.cameraRepository.save(camera);
+      this.logger.log(`Reactivated camera with ID: ${updatedCamera.id}`);
+      // await this.activateExistingCamera(createCameraDto.ip);
       const snapshotUrl = await this.activateCameraAndGetSnapshot(createCameraDto);
       return snapshotUrl;
     }
