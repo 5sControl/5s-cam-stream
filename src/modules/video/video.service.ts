@@ -37,7 +37,19 @@ export class VideoService implements OnModuleInit {
       {},
       {
         repeat: {
-          cron: '54 17 * * *',
+          cron: '0 * * * *',
+        },
+        removeOnComplete: true,
+        removeOnFail: true,
+      },
+    );
+
+    await this.cleanupQueue.add(
+      'checkDiskSpace',
+      {},
+      {
+        repeat: {
+          cron: '05 * * * *',
         },
         removeOnComplete: true,
         removeOnFail: true,
@@ -222,5 +234,20 @@ export class VideoService implements OnModuleInit {
       throw new NotFoundException(`No video fragment found for camera ${cameraIp} at time ${time}`);
     }
     return VideoMapper.fromEntityToDomain(video);
+  }
+
+  async getOldestVideoRecord(): Promise<Video | null> {
+    const video = await this.videoRepository.findOne({
+      order: { createdAt: 'ASC' },
+    });
+    return VideoMapper.fromEntityToDomain(video);
+  }
+
+  async removeVideoRecordAndFile(videoId: number): Promise<void> {
+    const record = await this.videoRepository.findOne({ where: { id: videoId } });
+    if (!record) return;
+
+    await this.storageService.removeFile(record.filePath);
+    await this.videoRepository.delete(videoId);
   }
 }
