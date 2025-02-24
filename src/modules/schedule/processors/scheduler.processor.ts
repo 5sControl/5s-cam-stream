@@ -1,6 +1,7 @@
 import { Processor, Process } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { CamerasService } from 'src/modules/cameras/cameras.service';
+import chalk from 'chalk';
 
 import { ScheduleService } from '../schedule.service';
 
@@ -15,7 +16,7 @@ export class SchedulerProcessor {
 
   @Process('checkSchedule')
   async handleCheckSchedule() {
-    this.logger.debug('Bull job "checkSchedule" started.');
+    this.logger.log(chalk.blue('Bull job "checkSchedule" started.'));
 
     const now = new Date();
     const currentDayIndex = now.getDay();
@@ -27,7 +28,7 @@ export class SchedulerProcessor {
     for (const schedule of cameraSchedules) {
       const { camera, workingTimeDay } = schedule;
       if (!camera.isActive) {
-        this.logger.debug(`Camera ${camera.id} is not active`);
+        this.logger.log(`Camera ${camera.id} is not active`);
         continue;
       }
 
@@ -35,7 +36,7 @@ export class SchedulerProcessor {
       const dayFromDb = workingTimeDay.dayOfWeek.day.toLowerCase();
 
       if (dayFromDb !== currentDayString) {
-        this.logger.debug(
+        this.logger.log(
           `${camera.id} Day ${dayFromDb} does not match current day ${currentDayString}`,
         );
         continue;
@@ -53,27 +54,25 @@ export class SchedulerProcessor {
       };
 
       if (this.isTimeBetween(currentTime, start, end)) {
-        this.logger.debug(
-          `${camera.id} Current time ${currentTime} is between ${start} and ${end}`,
-        );
+        this.logger.log(`${camera.id} Current time ${currentTime} is between ${start} and ${end}`);
 
         if (!camera.isRecording) {
-          this.logger.debug(`${camera.id} Camera ${camera.id} is not recording, run`);
+          this.logger.log(`${camera.id} Camera ${camera.id} is not recording, run`);
           await this.cameraService.activateCameraAndGetSnapshot(dto);
         }
       } else {
-        this.logger.debug(
+        this.logger.log(
           `${camera.id} Current time ${currentTime} is not between ${start} and ${end}`,
         );
 
         if (camera.isRecording) {
-          this.logger.debug(`${camera.id} Camera ${camera.id} is recording, stop`);
+          this.logger.log(`${camera.id} Camera ${camera.id} is recording, stop`);
           await this.cameraService.stopRecording(camera.id);
         }
       }
     }
 
-    this.logger.debug('Bull job "checkSchedule" finished.');
+    this.logger.log(chalk.blue('Bull job "checkSchedule" finished.'));
   }
 
   private mapDayNumberToString(dayIndex: number): string {
