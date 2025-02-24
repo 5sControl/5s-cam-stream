@@ -109,7 +109,7 @@ export const snapshotCameraBody: ApiBodyOptions = {
 };
 
 export const checkRtspUrlOperation: ApiOperationOptions = {
-  summary: 'Check RTSP stream URL',
+  summary: 'Check stream URL',
   description: 'Returns a working RTSP URL for the given camera credentials.',
 };
 

@@ -79,7 +79,7 @@ export class CamerasController {
   }
 
   // /get_stream_url
-  @Post('rtsp-check')
+  @Post('stream-url')
   @HttpCode(HttpStatus.OK)
   @ApiOperation(checkRtspUrlOperation)
   @ApiBody(checkRtspUrlBody)

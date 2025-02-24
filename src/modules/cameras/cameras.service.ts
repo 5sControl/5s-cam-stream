@@ -20,10 +20,10 @@ export class CamerasService {
   constructor(
     @InjectRepository(CameraRepository)
     private readonly cameraRepository: CameraRepository,
-    private readonly mediaService: MediaService,
     private readonly cameraSnapshotManager: CameraSnapshotManager,
-    private readonly storageService: StorageService,
     private readonly configService: ConfigService,
+    private readonly mediaService: MediaService,
+    private readonly storageService: StorageService,
   ) {}
 
   async create(createCameraDto: CreateCameraDto): Promise<CameraResponseDto> {

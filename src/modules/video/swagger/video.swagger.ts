@@ -2,6 +2,7 @@ import { HttpStatus } from '@nestjs/common';
 import { ApiBodyOptions, ApiOperationOptions, ApiResponseOptions } from '@nestjs/swagger';
 
 import { CreateManifestDto } from '../dto/create-manifest.dto';
+import { VideoSegmentDto } from '../dto/video-segment.dto';
 
 export const getManifestOperation: ApiOperationOptions = {
   summary: 'Create video manifest',
@@ -45,4 +46,26 @@ export const manifestBody: ApiBodyOptions = {
       },
     },
   },
+};
+
+export const videoAvailabilityOperation: ApiOperationOptions = {
+  summary: 'Check if a video fragment is available',
+  description:
+    'Returns information about a video fragment covering the given timestamp for a specific camera IP.',
+};
+
+export const videoAvailabilityResponse: ApiResponseOptions = {
+  status: HttpStatus.OK,
+  description: 'Video fragment info returned.',
+  type: VideoSegmentDto,
+};
+
+export const videoAvailabilityBadResponse: ApiResponseOptions = {
+  status: HttpStatus.BAD_REQUEST,
+  description: 'File not found or invalid query params.',
+};
+
+export const videoAvailabilityNotFound: ApiResponseOptions = {
+  status: HttpStatus.NOT_FOUND,
+  description: 'No video fragment found for the given parameters.',
 };

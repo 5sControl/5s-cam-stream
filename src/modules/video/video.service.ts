@@ -15,6 +15,7 @@ import { VideoRepository } from './repositories/video.repository';
 import { VideoMapper } from './mappers/video.mapper';
 import { Video } from './domain/video.domain';
 import { CreateVideoDto } from './dto/create-video.dto';
+import { VideoSegmentDto } from './dto/video-segment.dto';
 
 @Injectable()
 export class VideoService implements OnModuleInit {
@@ -206,7 +207,16 @@ export class VideoService implements OnModuleInit {
     return m3u8;
   }
 
-  async checkVideoAvailability(time: number, cameraIp: string): Promise<Video> {
+  async checkVideoAvailability(time: number, cameraIp: string): Promise<VideoSegmentDto> {
+    const video: Video = await this.findSegment(time, cameraIp);
+    await this.storageService.statSafe(video.filePath);
+    const rollBackTime = 2_000;
+    let videoStartFrom: number = time - video.startTime;
+    videoStartFrom = Math.max(0, videoStartFrom - rollBackTime);
+    return VideoMapper.toSegmentDto({ ...video, offset: videoStartFrom });
+  }
+
+  async findSegment(time: number, cameraIp: string): Promise<Video> {
     const video = await this.videoRepository.findByTimeAndCamera(time, cameraIp);
     if (!video) {
       throw new NotFoundException(`No video fragment found for camera ${cameraIp} at time ${time}`);
