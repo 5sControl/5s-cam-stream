@@ -2,6 +2,7 @@ import { Processor, Process } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { CamerasService } from 'src/modules/cameras/cameras.service';
 import chalk from 'chalk';
+import { AesService } from 'src/modules/cameras/aes.service';
 
 import { ScheduleService } from '../schedule.service';
 
@@ -12,6 +13,7 @@ export class SchedulerProcessor {
   constructor(
     private readonly scheduleService: ScheduleService,
     private readonly cameraService: CamerasService,
+    private readonly aesService: AesService,
   ) {}
 
   @Process('checkSchedule')
@@ -46,10 +48,13 @@ export class SchedulerProcessor {
       const { timeStart, timeEnd } = workingTimeDay.workingTime;
       const start = timeStart.slice(0, 5);
       const end = timeEnd.slice(0, 5);
+      const password = this.aesService.decrypt(camera.password);
+      console.log(password, 'password');
+
       const dto = {
         ip: camera.id,
         username: camera.username,
-        password: camera.password,
+        password,
         name: camera.name,
       };
 
