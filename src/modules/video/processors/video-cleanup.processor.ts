@@ -135,7 +135,6 @@ export class VideoCleanupProcessor {
       return;
     }
     const mtimeMs = stat.mtime.getTime();
-    this.logger.log(`File mtime: ${mtimeMs} ${fullPath}`);
     if (mtimeMs < thresholdMs) {
       const relativeFilePath = path.relative(videosDir, fullPath);
       const filePath = path.join('videos', relativeFilePath);
