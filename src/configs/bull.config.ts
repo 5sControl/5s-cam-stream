@@ -7,7 +7,9 @@ export const bullConfig: SharedBullAsyncConfiguration = {
     redis: {
       host: configService.getOrThrow<string>('REDIS_HOST'),
       port: configService.getOrThrow<number>('REDIS_PORT'),
-      password: configService.getOrThrow<string>('REDIS_PASSWORD'),
+      ...(configService.get<string>('REDIS_PASSWORD')
+        ? { password: configService.get<string>('REDIS_PASSWORD') }
+        : {}),
     },
   }),
   inject: [ConfigService],
