@@ -21,17 +21,9 @@ export class SchedulerProcessor {
     this.logger.log(chalk.blue('Bull job "checkSchedule" started.'));
 
     const now = new Date();
-    console.log(now, 'now');
-
     const currentDayIndex = now.getDay();
-    console.log(currentDayIndex, 'currentDayIndex');
-
     const currentTime = now.toTimeString().slice(0, 5);
-    console.log(currentTime, 'currentTime');
-
     const currentDayString = this.mapDayNumberToString(currentDayIndex);
-    console.log(currentDayString, 'currentDayString');
-
     const cameraSchedules = await this.scheduleService.findAllSchedulesWithRelations();
 
     for (const schedule of cameraSchedules) {

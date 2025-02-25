@@ -21,18 +21,13 @@ export class CameraSnapshotManager {
       this.logger.warn(`Snapshot capture already running for camera ${cameraIp}`);
       return;
     }
-
+    this.logger.log(`Snapshot for camera ${cameraIp} run`);
     const subscription = timer(0, 1000).subscribe(async () => {
       try {
-        const result = await this.mediaService.captureSnapshot(
-          cameraIp,
-          rtspUrl,
-          imagesUrl,
-          outputPath,
-        );
-        this.logger.log(`Snapshot for camera ${cameraIp}: ${result.url}`);
+        await this.mediaService.captureSnapshot(cameraIp, rtspUrl, imagesUrl, outputPath);
+        // this.logger.log(`Snapshot for camera ${cameraIp}: ${result.url}`);
       } catch (error) {
-        this.logger.warn(`Snapshot error for camera ${cameraIp}`);
+        // this.logger.warn(`Snapshot error for camera ${cameraIp}`);
       }
     });
     this.snapshotSubscriptions.set(cameraIp, subscription);
