@@ -1,8 +1,8 @@
 import {
   Entity,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
+  // CreateDateColumn,
+  // UpdateDateColumn,
   PrimaryColumn,
   OneToMany,
 } from 'typeorm';
@@ -29,11 +29,11 @@ export class CameraEntity {
   @Column({ name: 'is_recording', default: false })
   isRecording: boolean;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
-  createdAt: Date;
+  // @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
+  // createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
-  updatedAt: Date;
+  // @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
+  // updatedAt: Date;
 
   @OneToMany(() => CameraScheduleEntity, (cameraSchedule) => cameraSchedule.camera)
   cameraSchedules: CameraScheduleEntity[];

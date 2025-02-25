@@ -33,19 +33,19 @@ export class Camera {
   @Expose()
   isActive: boolean;
 
-  @ApiProperty({
-    description: 'Timestamp when the camera record was created',
-    example: '2023-05-01T12:00:00.000Z',
-    readOnly: true,
-  })
-  @Expose()
-  createdAt: Date;
+  // @ApiProperty({
+  //   description: 'Timestamp when the camera record was created',
+  //   example: '2023-05-01T12:00:00.000Z',
+  //   readOnly: true,
+  // })
+  // @Expose()
+  // createdAt: Date;
 
-  @ApiProperty({
-    description: 'Timestamp when the camera record was last updated',
-    example: '2023-05-02T12:00:00.000Z',
-    readOnly: true,
-  })
-  @Expose()
-  updatedAt: Date;
+  // @ApiProperty({
+  //   description: 'Timestamp when the camera record was last updated',
+  //   example: '2023-05-02T12:00:00.000Z',
+  //   readOnly: true,
+  // })
+  // @Expose()
+  // updatedAt: Date;
 }
