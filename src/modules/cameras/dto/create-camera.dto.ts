@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsIP, IsNotEmpty, IsString } from 'class-validator';
+import { IsIP, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateCameraDto {
   @ApiProperty({
@@ -31,6 +31,6 @@ export class CreateCameraDto {
     description: 'Name of the camera',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   name: string;
 }
