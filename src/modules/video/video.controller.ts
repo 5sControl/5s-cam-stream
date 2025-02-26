@@ -41,7 +41,7 @@ export class VideoController {
   @ApiResponse(videoAvailabilityBadResponse)
   async checkAvailability(@Query() query: VideoAvailabilityQueryDto): Promise<VideoSegmentDto> {
     const { time, cameraIp } = query;
-    this.logger.log(`GET /videos/availability?time=${time}&camera_ip=${cameraIp}`);
+    this.logger.log(`GET /videos/availability?time=${time}&cameraIp=${cameraIp}`);
 
     const result = await this.videoService.checkVideoAvailability(time, cameraIp);
     return result;
