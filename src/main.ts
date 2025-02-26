@@ -23,7 +23,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api/cam-stream');
   const document = SwaggerModule.createDocument(app, swaggerConfig);
 
-  SwaggerModule.setup('api', app, document, swaggerCustomOptions);
+  SwaggerModule.setup('api/cam-stream', app, document, swaggerCustomOptions);
   await app.listen(process.env.PORT ?? 3010);
 }
 bootstrap();

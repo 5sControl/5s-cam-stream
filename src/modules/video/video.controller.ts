@@ -22,7 +22,7 @@ export class VideoController {
   private readonly logger = new Logger(VideoController.name);
   constructor(private readonly videoService: VideoService) {}
 
-  @Post('create_manifest')
+  @Post('create-manifest')
   @ApiOperation(getManifestOperation)
   @ApiResponse(getManifestResponse)
   @ApiResponse(getInvalidParamResponse)
