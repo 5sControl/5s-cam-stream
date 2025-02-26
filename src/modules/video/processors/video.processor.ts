@@ -63,7 +63,7 @@ export class VideoProcessor {
         .videoFilter(videoFilter)
         .audioCodec('aac')
         .audioFilter(audioFilter)
-        .outputOptions(['-preset', 'slow', '-crf', '30'])
+        .outputOptions(['-preset', 'fast', '-crf', '30', '-threads', `${os.cpus().length}`])
         .format('mpegts')
         .output(chunkOutputPath)
         .on('end', () => resolve(true))
