@@ -23,11 +23,11 @@ export class CameraEntity {
   @Column({ type: 'varchar', length: 100 })
   name: string;
 
-  @Column({ name: 'is_active', default: true })
-  isActive: boolean;
+  @Column({ name: 'is_active', type: 'boolean', default: true })
+  isActive: boolean = true;
 
-  @Column({ name: 'is_recording', default: false })
-  isRecording: boolean;
+  @Column({ name: 'is_recording', type: 'boolean', default: false })
+  isRecording: boolean = false;
 
   // @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   // createdAt: Date;
