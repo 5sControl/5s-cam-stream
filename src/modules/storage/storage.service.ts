@@ -110,9 +110,12 @@ export class StorageService {
   }
 
   generatePublicChunkPath(outTsPath: string, cameraIp: string): string {
-    const chunkName = path.basename(outTsPath);
+    const fileName = path.basename(outTsPath);
+    const folderName = path.basename(path.dirname(outTsPath));
+    const relativePath = path.join(folderName, fileName);
+    console.log('videos', cameraIp, relativePath);
 
-    const publicChunkPath = path.join('videos', cameraIp, chunkName).replace(/\\/g, '/');
+    const publicChunkPath = path.join('videos', cameraIp, relativePath).replace(/\\/g, '/');
     return publicChunkPath;
   }
 
