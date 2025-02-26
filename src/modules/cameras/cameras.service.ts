@@ -31,21 +31,21 @@ export class CamerasService {
     const { ip } = createCameraDto;
     const camera = await this.getCamera(ip);
 
-    if (!camera) {
-      const cameraEntity = CameraMapper.fromDtoToEntity(createCameraDto);
-      const camera = this.cameraRepository.create(cameraEntity);
-      const savedCamera = await this.cameraRepository.save(camera);
-      this.logger.log(`Created camera with ID: ${savedCamera.id}`);
-      const snapshotUrl = await this.activateCameraAndGetSnapshot(createCameraDto);
-      return snapshotUrl;
-    } else {
-      camera.isActive = true;
-      const updatedCamera = await this.cameraRepository.save(camera);
-      this.logger.log(`Reactivated camera with ID: ${updatedCamera.id}`);
-      // await this.activateExistingCamera(createCameraDto.ip);
-      const snapshotUrl = await this.activateCameraAndGetSnapshot(createCameraDto);
-      return snapshotUrl;
-    }
+    // if (!camera) {
+    //   const cameraEntity = CameraMapper.fromDtoToEntity(createCameraDto);
+    //   const camera = this.cameraRepository.create(cameraEntity);
+    //   const savedCamera = await this.cameraRepository.save(camera);
+    //   this.logger.log(`Created camera with ID: ${savedCamera.id}`);
+    //   const snapshotUrl = await this.activateCameraAndGetSnapshot(createCameraDto);
+    //   return snapshotUrl;
+    // } else {
+    camera.isActive = true;
+    const updatedCamera = await this.cameraRepository.save(camera);
+    this.logger.log(`Reactivated camera with ID: ${updatedCamera.id}`);
+    // await this.activateExistingCamera(createCameraDto.ip);
+    const snapshotUrl = await this.activateCameraAndGetSnapshot(createCameraDto);
+    return snapshotUrl;
+    // }
   }
 
   async deactivate(ip: string): Promise<Camera> {
@@ -121,7 +121,10 @@ export class CamerasService {
   private async getCamera(ip: string) {
     const camera = await this.cameraRepository.findOneBy({ id: ip });
 
-    return camera ?? null;
+    if (!camera) {
+      throw new NotFoundException(`Camera with IP ${ip} not found`);
+    }
+    return camera;
   }
 
   async getActiveCameras(): Promise<Camera[]> {
