@@ -11,6 +11,7 @@ import { CameraResponseDto } from '../dto/camera-response.dto';
 import { CreateCameraDto } from '../dto/create-camera.dto';
 import { SnapshotCameraDto } from '../dto/snapshot-camera.dto';
 import { CheckStreamUrlDto } from '../dto/check-stream-url.dto';
+import { StatusCameraDto } from '../dto/status-camera.dto';
 
 export const createCameraOperation: ApiOperationOptions = {
   summary: 'Add a new camera',
@@ -137,4 +138,44 @@ export const checkRtspUrlResponse: ApiResponseOptions = {
 export const checkRtspUrlBadResponse: ApiResponseOptions = {
   status: HttpStatus.BAD_REQUEST,
   description: 'Invalid input data. Check the request body and try again.',
+};
+
+export const cameraStatus: ApiOperationOptions = {
+  summary: 'Check if camera is working and return a snapshot',
+  description:
+    'Captures a snapshot from the camera (using its RTSP stream) and returns the image from disk. ' +
+    'This verifies that the camera is online and working.',
+};
+
+export const cameraStatusResponse: ApiResponseOptions = {
+  status: HttpStatus.OK,
+  description: 'Camera status successfully checked.',
+  content: {
+    'image/jpeg': {
+      schema: {
+        type: 'string',
+        format: 'binary',
+      },
+    },
+  },
+};
+
+export const cameraStatusBadResponse: ApiResponseOptions = {
+  status: HttpStatus.BAD_REQUEST,
+  description: 'Invalid input data. Check the request body and try again.',
+};
+
+export const cameraStatusBody: ApiBodyOptions = {
+  description: 'Camera credentials required to capture snapshot',
+  type: StatusCameraDto,
+  examples: {
+    example1: {
+      summary: 'Example: check camera snapshot',
+      value: {
+        ip: '192.168.1.168',
+        username: 'admin',
+        password: 'just4Taqtile',
+      },
+    },
+  },
 };

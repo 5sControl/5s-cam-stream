@@ -12,6 +12,7 @@ import { CreateCameraDto } from './dto/create-camera.dto';
 import { CameraMapper } from './mappers/camera.mapper';
 import { CameraResponseDto } from './dto/camera-response.dto';
 import { Camera } from './domain/camera.domain';
+import { StatusCameraDto } from './dto/status-camera.dto';
 
 @Injectable()
 export class CamerasService {
@@ -131,5 +132,14 @@ export class CamerasService {
   async getRtspUrlOrFail(ip: string, username: string, password: string): Promise<string> {
     const rtspUrl = await this.mediaService.getWorkingRtspUrl(username, password, ip);
     return rtspUrl;
+  }
+
+  async getStatusCamera(dto: StatusCameraDto): Promise<Buffer> {
+    const { ip, username, password } = dto;
+    const rtspUrl = await this.mediaService.getWorkingRtspUrl(username, password, ip);
+    const { outputPath, imagesUrl } = await this.storageService.prepareSnapshotFolder(ip);
+    await this.mediaService.captureSnapshot(ip, rtspUrl, imagesUrl, outputPath);
+
+    return this.storageService.getSnapshotFromDisk(ip);
   }
 }
