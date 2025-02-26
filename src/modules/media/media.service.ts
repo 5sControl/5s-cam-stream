@@ -207,21 +207,17 @@ export class MediaService {
 
   async getWorkingRtspUrl(username: string, password: string, cameraIp: string): Promise<string> {
     const rtspTemplatesString = this.configService.get<string>('RTSP_TEMPLATES', '');
-    console.log(rtspTemplatesString, 0);
 
     const templates = rtspTemplatesString
       .split(',')
       .map((t) => t.trim())
       .filter(Boolean);
-    console.log(templates, 1);
 
     if (!templates.length) {
       throw new InternalServerErrorException('No RTSP templates configured in RTSP_TEMPLATES');
     }
 
     for (const template of templates) {
-      console.log(template, username, password, cameraIp, 777);
-
       const rtspUrl = buildRtspUrl(template, username, password, cameraIp);
 
       this.logger.debug(`Trying RTSP URL: ${rtspUrl}`);

@@ -22,11 +22,13 @@ export class SchedulerProcessor {
 
     const now = new Date();
     const currentDayIndex = now.getDay();
-    const currentTime = now.toLocaleTimeString([], {
+    const currentTime = now.toLocaleTimeString(undefined, {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
     });
+    console.log(currentTime, 'currentTime');
+
     const currentDayString = this.mapDayNumberToString(currentDayIndex);
     const cameraSchedules = await this.scheduleService.findAllSchedulesWithRelations();
 
