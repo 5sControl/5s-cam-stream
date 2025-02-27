@@ -56,47 +56,6 @@ export class MediaService {
     return { url: snapshotUrl };
   }
 
-  // async startRecording(
-  //   cameraIp: string,
-  //   rtspUrl: string,
-  //   recordDuration: string,
-  // ): Promise<ffmpeg.FfmpegCommand> {
-  //   try {
-  //     const { outputDir, outputPattern } =
-  //       await this.storageService.prepareRecordingFolder(cameraIp);
-  //     await this.startSegmentWatcher(cameraIp, outputDir, recordDuration);
-
-  //     const command = ffmpeg(rtspUrl)
-  //       .inputOptions('-rtsp_transport tcp')
-  //       .outputOptions([
-  //         '-f',
-  //         'segment',
-  //         '-segment_time',
-  //         `${recordDuration}`,
-  //         '-reset_timestamps',
-  //         '1',
-  //         '-strftime',
-  //         '1',
-  //         '-c:v',
-  //         'libx264',
-  //         '-preset',
-  //         'slow',
-  //         '-crf',
-  //         '30',
-  //         '-c:a',
-  //         'aac',
-  //         '-b:a',
-  //         '128k',
-  //       ])
-  //       .save(outputPattern);
-
-  //     return command;
-  //   } catch (error) {
-  //     this.logger.error(`Error starting recording for camera ${cameraIp}: ${error.message}`);
-  //     throw error;
-  //   }
-  // }
-
   async startRecording(
     cameraIp: string,
     rtspUrl: string,
@@ -114,8 +73,8 @@ export class MediaService {
           'segment',
           '-segment_time',
           `${recordDuration}`,
-          '-segment_format',
-          'mpegts',
+          '-reset_timestamps',
+          '1',
           '-strftime',
           '1',
           '-c:v',
@@ -137,6 +96,47 @@ export class MediaService {
       throw error;
     }
   }
+
+  // async startRecording(
+  //   cameraIp: string,
+  //   rtspUrl: string,
+  //   recordDuration: string,
+  // ): Promise<ffmpeg.FfmpegCommand> {
+  //   try {
+  //     const { outputDir, outputPattern } =
+  //       await this.storageService.prepareRecordingFolder(cameraIp);
+  //     await this.startSegmentWatcher(cameraIp, outputDir, recordDuration);
+
+  //     const command = ffmpeg(rtspUrl)
+  //       .inputOptions('-rtsp_transport tcp')
+  //       .outputOptions([
+  //         '-f',
+  //         'segment',
+  //         '-segment_time',
+  //         `${recordDuration}`,
+  //         '-segment_format',
+  //         'mpegts',
+  //         '-strftime',
+  //         '1',
+  //         '-c:v',
+  //         'libx264',
+  //         '-preset',
+  //         'slow',
+  //         '-crf',
+  //         '30',
+  //         '-c:a',
+  //         'aac',
+  //         '-b:a',
+  //         '128k',
+  //       ])
+  //       .save(outputPattern);
+
+  //     return command;
+  //   } catch (error) {
+  //     this.logger.error(`Error starting recording for camera ${cameraIp}: ${error.message}`);
+  //     throw error;
+  //   }
+  // }
 
   async initiateRecording(
     cameraIp: string,
@@ -308,7 +308,7 @@ export class MediaService {
   ): Promise<void> {
     const watcher = watch(outputDir, async (eventType, filename) => {
       if (eventType === 'rename' && filename) {
-        const regex = new RegExp(`^(\\d{4}-\\d{2}-\\d{2}_\\d{2}-\\d{2}-\\d{2})-${cameraIp}\\.ts$`);
+        const regex = new RegExp(`^(\\d{4}-\\d{2}-\\d{2}_\\d{2}-\\d{2}-\\d{2})-${cameraIp}\\.mp4$`);
         const match = filename.match(regex);
 
         if (match) {
@@ -324,7 +324,7 @@ export class MediaService {
           }
 
           const endTime = moment(startTime).add(recordDuration, 'seconds');
-          const newFileName = `${startTime.format('YYYY-MM-DD_HH-mm-ss')}-${endTime.format('HH-mm-ss')}-${cameraIp}.ts`;
+          const newFileName = `${startTime.format('YYYY-MM-DD_HH-mm-ss')}-${endTime.format('HH-mm-ss')}-${cameraIp}.mp4`;
           const relativeFilePath = `${matchVideoPath[1]}/${newFileName}`;
 
           if (this.processedSegments.has(relativeFilePath)) {

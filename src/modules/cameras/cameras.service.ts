@@ -108,13 +108,12 @@ export class CamerasService {
 
     const { username, password, ip } = createCameraDto;
     const recordDuration = this.configService.getOrThrow<string>('RECORD_DURATION');
-    console.log(username, password, ip, 6666);
-
     const rtspUrl = await this.mediaService.getWorkingRtspUrl(username, password, ip);
     const { outputPath, imagesUrl } = await this.storageService.prepareSnapshotFolder(ip);
     const snapshotUrl = await this.mediaService.captureSnapshot(ip, rtspUrl, imagesUrl, outputPath);
     this.cameraSnapshotManager.start(ip, rtspUrl, imagesUrl, outputPath);
     await this.mediaService.initiateRecording(ip, rtspUrl, recordDuration);
+
     return snapshotUrl;
   }
 

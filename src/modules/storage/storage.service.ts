@@ -109,15 +109,10 @@ export class StorageService {
     return { timespanDir, manifestPath, timespanFolder };
   }
 
-  generatePublicChunkPath(outTsPath: string, cameraIp: string): string {
+  generatePublicChunkPath(outTsPath: string): string {
     const fileName = path.basename(outTsPath);
-    // const folderName = path.basename(path.dirname(outTsPath));
-    // const relativePath = path.join(folderName, fileName);
-    console.log(fileName, 1);
 
-    // const publicChunkPath = path.join('videos', cameraIp, relativePath).replace(/\\/g, '/');
     return fileName;
-    // return publicChunkPath;
   }
 
   async writeManifest(timespanDir: string, manifestPath: string, m3u8: string): Promise<void> {

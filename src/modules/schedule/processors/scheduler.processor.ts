@@ -27,7 +27,6 @@ export class SchedulerProcessor {
       minute: '2-digit',
       hour12: false,
     });
-    console.log(currentTime, 'currentTime');
 
     const currentDayString = this.mapDayNumberToString(currentDayIndex);
     const cameraSchedules = await this.scheduleService.findAllSchedulesWithRelations();
@@ -67,7 +66,6 @@ export class SchedulerProcessor {
 
         if (!camera.isRecording) {
           this.logger.log(`${camera.id} Camera ${camera.id} is not recording, run`);
-          console.log(dto, 555);
 
           await this.cameraService.activateCameraAndGetSnapshot(dto);
         }

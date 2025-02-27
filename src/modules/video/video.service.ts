@@ -207,10 +207,7 @@ export class VideoService implements OnModuleInit {
       if (duration < 0) {
         duration = 0;
       }
-      const publicPath = this.storageService.generatePublicChunkPath(
-        chunkInfos[i].chunkOutputPath,
-        cameraIp,
-      );
+      const publicPath = this.storageService.generatePublicChunkPath(chunkInfos[i].chunkOutputPath);
       m3u8 += `#EXTINF:${duration},\n`;
       m3u8 += `${publicPath}\n`;
     }
