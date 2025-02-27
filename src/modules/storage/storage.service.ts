@@ -135,6 +135,14 @@ export class StorageService {
     }
   }
 
+  getRelativePathForManifest(fullPath: string): string {
+    const index = fullPath.indexOf('videos/');
+    if (index !== -1) {
+      return fullPath.substring(index);
+    }
+    return fullPath;
+  }
+
   async statSafe(path: string): Promise<Stats | null> {
     try {
       return await fs.stat(path);

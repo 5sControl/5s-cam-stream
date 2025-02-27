@@ -119,7 +119,7 @@ export class VideoService implements OnModuleInit {
         await this.videoQueue.add('convert', chunk);
       }
 
-      return m3u8;
+      return this.storageService.getRelativePathForManifest(manifestPath);
     } catch (error) {
       console.error('Error writing manifest', error);
     }
@@ -128,7 +128,7 @@ export class VideoService implements OnModuleInit {
   private async checkAndReturnManifestPath(manifestPath: string): Promise<string | null> {
     try {
       await fsPromise.stat(manifestPath);
-      return manifestPath;
+      return this.storageService.getRelativePathForManifest(manifestPath);
     } catch (error) {
       return null;
     }
