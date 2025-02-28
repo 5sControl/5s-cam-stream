@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import * as os from 'os';
 
 import { OnQueueActive, OnQueueCompleted, OnQueueFailed, Process, Processor } from '@nestjs/bull';
 import { Job } from 'bull';
@@ -11,7 +10,7 @@ import { ChunkInfo } from '../models/interfaces/chunk-info.interface';
 @Processor('video')
 export class VideoProcessor {
   private readonly logger = new Logger(VideoProcessor.name);
-  @Process({ name: 'convert', concurrency: os.cpus().length })
+  @Process({ name: 'convert' })
   async handleConversion(job: Job<ChunkInfo>) {
     const { filePath, chunkOutputPath, chunkStartTime, chunkDuration, segmentInputOffset } =
       job.data;
@@ -51,8 +50,6 @@ export class VideoProcessor {
     segmentInputOffset: number,
   ): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      console.log(filePath, chunkOutputPath, chunkStartTime, chunkDuration, segmentInputOffset);
-
       let command = Ffmpeg()
         .input(filePath)
         .inputOptions([`-ss ${segmentInputOffset}`, `-t ${chunkDuration}`]);
