@@ -131,7 +131,7 @@ export class VideoCleanupProcessor {
     videosDir: string,
   ) {
     const ext = path.extname(fullPath).toLowerCase();
-    if (ext !== '.mp4') {
+    if (ext !== '.ts') {
       return;
     }
     const mtimeMs = stat.mtime.getTime();

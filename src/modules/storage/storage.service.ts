@@ -72,7 +72,7 @@ export class StorageService {
   }
 
   private buildRecordingFileName(cameraIp: string): string {
-    return `%Y-%m-%d_%H-%M-%S-${cameraIp}.mp4`;
+    return `%Y-%m-%d_%H-%M-%S-${cameraIp}.ts`;
   }
 
   async getSnapshotFilePath(cameraIp: string): Promise<string> {
@@ -101,12 +101,17 @@ export class StorageService {
       path.join(__dirname, '..', 'videos'),
     );
 
-    const timespanFolder = `${timespanId}_${timeStart}_${timeEnd}`;
-    const timespanDir = path.join(videosDir, cameraIp, timespanFolder);
+    // const timespanFolder = `${timespanId}_${timeStart}_${timeEnd}`;
+    // const timespanDir = path.join(videosDir, cameraIp, timespanFolder);
+    // const m3u8Name = `${timespanId}_${timeStart}_${timeEnd}_${cameraIp}.m3u8`;
+    // const manifestPath = path.join(timespanDir, m3u8Name);
+
+    // const timespanFolder = `${timespanId}_${timeStart}_${timeEnd}`;
+    const timespanDir = path.join(videosDir, cameraIp);
     const m3u8Name = `${timespanId}_${timeStart}_${timeEnd}_${cameraIp}.m3u8`;
     const manifestPath = path.join(timespanDir, m3u8Name);
 
-    return { timespanDir, manifestPath, timespanFolder };
+    return { timespanDir, manifestPath };
   }
 
   generatePublicChunkPath(outTsPath: string): string {
@@ -116,7 +121,7 @@ export class StorageService {
   }
 
   async writeManifest(timespanDir: string, manifestPath: string, m3u8: string): Promise<void> {
-    await fs.mkdir(timespanDir, { recursive: true });
+    // await fs.mkdir(timespanDir, { recursive: true });
     await fs.writeFile(manifestPath, m3u8, 'utf8');
   }
 

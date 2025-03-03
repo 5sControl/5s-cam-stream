@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { promises as fsPromise } from 'fs';
+import path from 'path';
 
 import { Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -115,9 +116,9 @@ export class VideoService implements OnModuleInit {
 
     try {
       await this.storageService.writeManifest(timespanDir, manifestPath, m3u8);
-      for (const chunk of chunkInfos) {
-        await this.videoQueue.add('convert', chunk);
-      }
+      // for (const chunk of chunkInfos) {
+      //   await this.videoQueue.add('convert', chunk);
+      // }
 
       return this.storageService.getRelativePathForManifest(manifestPath);
     } catch (error) {
@@ -207,7 +208,9 @@ export class VideoService implements OnModuleInit {
       if (duration < 0) {
         duration = 0;
       }
-      const publicPath = this.storageService.generatePublicChunkPath(chunkInfos[i].chunkOutputPath);
+      const publicPath = this.storageService.generatePublicChunkPath(
+        path.basename(chunkInfos[i].filePath),
+      );
       m3u8 += `#EXTINF:${duration},\n`;
       m3u8 += `${publicPath}\n`;
     }
