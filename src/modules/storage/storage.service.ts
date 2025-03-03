@@ -101,13 +101,8 @@ export class StorageService {
       path.join(__dirname, '..', 'videos'),
     );
 
-    // const timespanFolder = `${timespanId}_${timeStart}_${timeEnd}`;
-    // const timespanDir = path.join(videosDir, cameraIp, timespanFolder);
-    // const m3u8Name = `${timespanId}_${timeStart}_${timeEnd}_${cameraIp}.m3u8`;
-    // const manifestPath = path.join(timespanDir, m3u8Name);
-
-    // const timespanFolder = `${timespanId}_${timeStart}_${timeEnd}`;
-    const timespanDir = path.join(videosDir, cameraIp);
+    const timespanFolder = `${timespanId}_${timeStart}_${timeEnd}`;
+    const timespanDir = path.join(videosDir, cameraIp, timespanFolder);
     const m3u8Name = `${timespanId}_${timeStart}_${timeEnd}_${cameraIp}.m3u8`;
     const manifestPath = path.join(timespanDir, m3u8Name);
 
@@ -121,7 +116,7 @@ export class StorageService {
   }
 
   async writeManifest(timespanDir: string, manifestPath: string, m3u8: string): Promise<void> {
-    // await fs.mkdir(timespanDir, { recursive: true });
+    await fs.mkdir(timespanDir, { recursive: true });
     await fs.writeFile(manifestPath, m3u8, 'utf8');
   }
 

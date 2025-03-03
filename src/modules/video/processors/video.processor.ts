@@ -12,16 +12,9 @@ export class VideoProcessor {
   private readonly logger = new Logger(VideoProcessor.name);
   @Process({ name: 'convert' })
   async handleConversion(job: Job<ChunkInfo>) {
-    const { filePath, chunkOutputPath, chunkStartTime, chunkDuration, segmentInputOffset } =
-      job.data;
+    const { filePath, chunkOutputPath, chunkDuration, segmentInputOffset } = job.data;
 
-    await this.runFfmpeg(
-      filePath,
-      chunkOutputPath,
-      chunkStartTime,
-      chunkDuration,
-      segmentInputOffset,
-    );
+    await this.runFfmpeg(filePath, chunkOutputPath, chunkDuration, segmentInputOffset);
   }
 
   @OnQueueFailed()
@@ -42,27 +35,46 @@ export class VideoProcessor {
     this.logger.log(`Job ${filePath} in queue ${job.name} is now active.`);
   }
 
+  // private runFfmpeg(
+  //   filePath: string,
+  //   chunkOutputPath: string,
+  //   chunkStartTime: number,
+  //   chunkDuration: number,
+  //   segmentInputOffset: number,
+  // ): Promise<boolean> {
+  //   return new Promise((resolve, reject) => {
+  //     let command = Ffmpeg()
+  //       .input(filePath)
+  //       .inputOptions([`-ss ${segmentInputOffset}`, `-t ${chunkDuration}`]);
+
+  //     const videoFilter = `setpts=PTS-STARTPTS+${chunkStartTime}/TB`;
+  //     const audioFilter = `asetpts=PTS-STARTPTS+${chunkStartTime}/TB`;
+
+  //     command
+  //       .videoCodec('libx264')
+  //       .videoFilter(videoFilter)
+  //       .audioCodec('aac')
+  //       .audioFilter(audioFilter)
+  //       .outputOptions(['-preset', 'fast', '-crf', '30'])
+  //       .format('mpegts')
+  //       .output(chunkOutputPath)
+  //       .on('end', () => resolve(true))
+  //       .on('error', (err) => reject(err))
+  //       .run();
+  //   });
+  // }
+
   private runFfmpeg(
     filePath: string,
     chunkOutputPath: string,
-    chunkStartTime: number,
     chunkDuration: number,
     segmentInputOffset: number,
   ): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      let command = Ffmpeg()
+      Ffmpeg()
         .input(filePath)
-        .inputOptions([`-ss ${segmentInputOffset}`, `-t ${chunkDuration}`]);
-
-      const videoFilter = `setpts=PTS-STARTPTS+${chunkStartTime}/TB`;
-      const audioFilter = `asetpts=PTS-STARTPTS+${chunkStartTime}/TB`;
-
-      command
-        .videoCodec('libx264')
-        .videoFilter(videoFilter)
-        .audioCodec('aac')
-        .audioFilter(audioFilter)
-        .outputOptions(['-preset', 'fast', '-crf', '30'])
+        .inputOptions([`-ss ${segmentInputOffset}`, `-t ${chunkDuration}`])
+        .outputOptions(['-c', 'copy'])
         .format('mpegts')
         .output(chunkOutputPath)
         .on('end', () => resolve(true))
@@ -70,27 +82,4 @@ export class VideoProcessor {
         .run();
     });
   }
-
-  // private runFfmpeg(
-  //   filePath: string,
-  //   chunkOutputPath: string,
-  //   chunkDuration: number,
-  //   segmentInputOffset: number,
-  // ): Promise<boolean> {
-  //   return new Promise((resolve, reject) => {
-  //     console.log(filePath, chunkOutputPath, chunkDuration, segmentInputOffset, 1);
-  //     const command = Ffmpeg(filePath)
-  //       .inputOptions([`-ss ${segmentInputOffset}`])
-  //       .videoCodec('copy')
-  //       .audioCodec('copy')
-  //       .outputOptions([`-t ${chunkDuration}`])
-  //       .format('mpegts')
-  //       .output(chunkOutputPath)
-
-  //       .on('end', () => resolve(true))
-  //       .on('error', (err) => reject(err));
-
-  //     command.run();
-  //   });
-  // }
 }

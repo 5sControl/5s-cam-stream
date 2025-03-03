@@ -112,13 +112,15 @@ export class VideoService implements OnModuleInit {
       throw new NotFoundException('No valid chunks to generate.');
     }
 
-    const m3u8 = this.generateM3u8(chunkInfos, cameraIp);
+    const m3u8 = this.generateM3u8(chunkInfos);
 
     try {
       await this.storageService.writeManifest(timespanDir, manifestPath, m3u8);
-      // for (const chunk of chunkInfos) {
-      //   await this.videoQueue.add('convert', chunk);
-      // }
+      for (const [index, chunk] of chunkInfos.entries()) {
+        if (index === 0 || index === chunkInfos.length - 1) {
+          await this.videoQueue.add('convert', chunk);
+        }
+      }
 
       return this.storageService.getRelativePathForManifest(manifestPath);
     } catch (error) {
@@ -196,7 +198,7 @@ export class VideoService implements OnModuleInit {
     return chunkInfos;
   }
 
-  private generateM3u8(chunkInfos: ChunkInfo[], cameraIp: string): string {
+  private generateM3u8(chunkInfos: ChunkInfo[]): string {
     const recordDuration = this.configService.get<string>('RECORD_DURATION', '30');
     let m3u8 = '#EXTM3U\n';
     m3u8 += '#EXT-X-VERSION:3\n';
@@ -205,12 +207,19 @@ export class VideoService implements OnModuleInit {
 
     for (let i = 0; i < chunkInfos.length; i++) {
       let duration = Number(chunkInfos[i].chunkDuration.toFixed(3));
+
       if (duration < 0) {
         duration = 0;
       }
-      const publicPath = this.storageService.generatePublicChunkPath(
-        path.basename(chunkInfos[i].filePath),
-      );
+
+      let publicPath: string;
+
+      if (i === 0 || i === chunkInfos.length - 1) {
+        publicPath = path.basename(chunkInfos[i].chunkOutputPath);
+      } else {
+        publicPath = path.posix.join('..', path.basename(chunkInfos[i].filePath));
+      }
+
       m3u8 += `#EXTINF:${duration},\n`;
       m3u8 += `${publicPath}\n`;
     }
