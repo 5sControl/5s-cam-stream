@@ -232,8 +232,11 @@ export class VideoService implements OnModuleInit {
 
   async checkVideoAvailability(time: number, cameraIp: string): Promise<VideoSegmentDto> {
     const video: Video = await this.findSegment(time, cameraIp);
+    console.log(video, time, cameraIp, 1);
+
     await this.storageService.statSafe(video.filePath);
-    const rollBackTime = 2_000;
+    console.log(2);
+    const rollBackTime = 1_000;
     let videoStartFrom: number = time - video.startTime;
     videoStartFrom = Math.max(0, videoStartFrom - rollBackTime);
     return VideoMapper.toSegmentDto({ ...video, offset: videoStartFrom });
