@@ -118,11 +118,6 @@ export class VideoService implements OnModuleInit {
 
     try {
       await this.storageService.writeManifest(timespanDir, manifestPath, m3u8);
-      // for (const [index, chunk] of chunkInfos.entries()) {
-      //   if (index === 0 || index === chunkInfos.length - 1) {
-      //     await this.videoQueue.add('convert', chunk);
-      //   }
-      // }
 
       return this.storageService.getRelativePathForManifest(manifestPath);
     } catch (error) {
@@ -156,21 +151,6 @@ export class VideoService implements OnModuleInit {
       const segment = segments[i];
       let segmentInputOffset = 0;
       let chunkDuration = recordDuration;
-
-      // if (i === 0) {
-      //   segmentInputOffset = (startTimeMs - segment.startTime) / 1000;
-      //   if (segmentInputOffset > 0) {
-      //     chunkDuration = recordDuration - segmentInputOffset;
-      //   }
-      // }
-
-      // if (i === segments.length - 1) {
-      //   const endOffset = (endTimeMs - segment.startTime) / 1000;
-      //   const availableDuration = endOffset - segmentInputOffset;
-      //   if (availableDuration < chunkDuration) {
-      //     chunkDuration = availableDuration;
-      //   }
-      // }
 
       if (chunkDuration <= 0) continue;
 
@@ -213,14 +193,7 @@ export class VideoService implements OnModuleInit {
       if (duration < 0) {
         duration = 0;
       }
-
-      // let publicPath: string;
-
-      // if (i === 0 || i === chunkInfos.length - 1) {
-      //   publicPath = path.basename(chunkInfos[i].chunkOutputPath);
-      // } else {
       const publicPath = path.posix.join('..', path.basename(chunkInfos[i].filePath));
-      // }
 
       m3u8 += `#EXTINF:${duration},\n`;
       m3u8 += `${publicPath}\n`;

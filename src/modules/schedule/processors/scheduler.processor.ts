@@ -42,9 +42,6 @@ export class SchedulerProcessor {
       const dayFromDb = workingTimeDay.dayOfWeek.day.toLowerCase();
 
       if (dayFromDb !== currentDayString) {
-        this.logger.log(
-          `${camera.id} Day ${dayFromDb} does not match current day ${currentDayString}`,
-        );
         continue;
       }
 
