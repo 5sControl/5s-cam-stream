@@ -144,4 +144,10 @@ export class CamerasService {
 
     return this.storageService.getSnapshotFromDisk(ip);
   }
+
+  async updateRecordingStatus(cameraId: string, isRecording: boolean) {
+    const camera = await this.getCamera(cameraId);
+    camera.isRecording = isRecording;
+    await this.cameraRepository.save(camera);
+  }
 }

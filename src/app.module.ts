@@ -2,6 +2,7 @@ import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { BullModule, InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 import { DatabaseModule } from './database/database.module';
 import { CamerasModule } from './modules/cameras/cameras.module';
@@ -16,6 +17,7 @@ import { ScheduleModule } from './modules/schedule/schedule.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     BullModule.forRootAsync(bullConfig),
+    EventEmitterModule.forRoot(),
     DatabaseModule,
     CamerasModule,
     MediaModule,

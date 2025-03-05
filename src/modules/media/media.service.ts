@@ -11,6 +11,7 @@ import ffmpeg from 'fluent-ffmpeg';
 import { buildRtspUrl } from 'src/common/utils/build-rtsp-url.util';
 import { EMPTY, Observable, Subscription, timer } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { StorageService } from '../storage/storage.service';
 import { VideoService } from '../video/video.service';
@@ -33,6 +34,7 @@ export class MediaService {
     private readonly configService: ConfigService,
     private readonly storageService: StorageService,
     private readonly videoService: VideoService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async captureSnapshot(
@@ -130,15 +132,6 @@ export class MediaService {
         '-hls_segment_filename',
         outputPattern,
       ])
-      .on('start', () => {
-        console.log(`Начата запись HLS в ${outputDir}`);
-      })
-      .on('error', (err) => {
-        console.error(`Ошибка записи HLS: ${err.message}`);
-      })
-      .on('end', () => {
-        console.log('Запись HLS завершена.');
-      })
       .save(manifestPath);
 
     await new Promise<void>((resolve, reject) => {
@@ -200,6 +193,7 @@ export class MediaService {
         },
       }),
       catchError((err) => {
+        this.eventEmitter.emit('camera.stopped', cameraIp);
         this.logger.error(
           `Failed to connect to camera ${cameraIp} after all attempts. Check the connection to the camera. Error: ${err.message}`,
         );
@@ -218,18 +212,24 @@ export class MediaService {
         .then((command) => {
           subscriber.next(command);
 
+          command.on('start', () => {
+            this.logger.log(`Started recording for camera ${cameraIp}`);
+          });
+
           command.on('error', (err) => {
-            console.error('FFmpeg recording error:', err);
+            this.logger.error(`Error recording for camera ${cameraIp}: ${err.message}`);
+            this.eventEmitter.emit('camera.stopped', cameraIp);
             subscriber.error(err);
           });
 
           command.on('end', () => {
-            console.log('FFmpeg recording stderr:', 'end');
+            this.logger.log('FFmpeg recording stop');
+            this.eventEmitter.emit('camera.stopped', cameraIp);
             subscriber.complete();
           });
         })
         .catch((err) => {
-          console.error('FFmpeg recording error: 2', err);
+          this.logger.error('FFmpeg recording error: 2', err);
           subscriber.error(err);
         });
     });
