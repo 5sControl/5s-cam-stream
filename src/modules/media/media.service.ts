@@ -321,11 +321,8 @@ export class MediaService {
       if (eventType === 'rename' && filename) {
         const regex = new RegExp(`^(\\d{4}-\\d{2}-\\d{2}_\\d{2}-\\d{2}-\\d{2})-${cameraIp}\\.ts$`);
         const match = filename.match(regex);
-        console.log(filename, 222);
 
         if (match) {
-          console.log(match, 333);
-
           const startTimeStr = match[1];
           const regexVideoPath = /(videos\/.+)$/;
           const matchVideoPath = outputDir.match(regexVideoPath);
@@ -344,7 +341,6 @@ export class MediaService {
           if (this.processedSegments.has(relativeFilePath)) {
             return;
           }
-          console.log(1);
 
           const video = await this.videoService.saveVideo({
             filePath: relativeFilePath,
