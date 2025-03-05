@@ -33,12 +33,14 @@ export class VideoService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
+    const serverTimezone = process.env.TZ || 'UTC';
     await this.cleanupQueue.add(
       'cleanupOldVideos',
       {},
       {
         repeat: {
-          cron: '0 * * * *',
+          cron: '0 1 * * *',
+          tz: serverTimezone,
         },
         removeOnComplete: true,
         removeOnFail: true,
