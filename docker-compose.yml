@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  5s-cam-stream:
+    container_name: 5s-cam-stream
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "3456:3456"
+    volumes:
+      - ./images:/usr/app/service/images
+      - ./videos:/usr/app/service/videos
+    networks:
+      - 5scontrol
+
+networks:
+  5scontrol:
+    name: '5scontrol'

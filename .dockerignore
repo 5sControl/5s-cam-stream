@@ -1,0 +1,52 @@
+# Ignore the node_modules directory
+node_modules
+
+# Ignore the dist directory (if used for build)
+dist
+
+# Ignore the .git directory
+.git
+
+# Ignore the .gitignore file
+.gitignore
+
+# Ignore Dockerfile and docker-compose.yml
+Dockerfile
+docker-compose.yml
+
+
+# Ignore the data directory (if used for storing data)
+data
+
+# Ignore files and directories related to Git
+COMMIT_EDITMSG
+HEAD
+index
+logs
+refs
+hooks
+info
+objects
+packed-refs
+ORIG_HEAD
+REBASE_HEAD
+
+# Ignore files and directories related to GitHub
+.github
+
+# Ignore files and directories related to tests
+test
+
+# Ignore configuration and documentation files
+.prettierrc
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+LICENSE
+LICENSE-3RD-PARTY.md
+README.md
+
+# Ignore files and directories related to macOS
+.DS_Store
+
+images
+videos

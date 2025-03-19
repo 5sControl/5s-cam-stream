@@ -1,10 +1,11 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
-import { swaggerConfig, swaggerCustomOptions } from './configs/swagger.config';
 import * as dotenv from 'dotenv';
+
+import { swaggerConfig, swaggerCustomOptions } from './configs/swagger.config';
+import { AppModule } from './app.module';
 dotenv.config();
 
 async function bootstrap() {
@@ -19,10 +20,10 @@ async function bootstrap() {
       transform: true,
     }),
   );
-
+  app.setGlobalPrefix('api/cam-stream');
   const document = SwaggerModule.createDocument(app, swaggerConfig);
 
-  SwaggerModule.setup('api', app, document, swaggerCustomOptions);
+  SwaggerModule.setup('api/cam-stream', app, document, swaggerCustomOptions);
   await app.listen(process.env.PORT ?? 3010);
 }
 bootstrap();
